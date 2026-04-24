@@ -1,0 +1,42 @@
+{
+  "experiment": "2b",
+  "seed": 3,
+  "disturbance_levels": {
+    "light_30Nm": {
+      "PD+CfC": {
+        "peak_err_rad": 0.23355080265382921,
+        "mae_post_mrad": 88.108801333934,
+        "recovery_time_s": 0.021999999999888775
+      },
+      "Full": {
+        "peak_err_rad": 0.12489003144156502,
+        "mae_post_mrad": 76.45967929974886,
+        "recovery_time_s": 0.021999999999888775
+      }
+    },
+    "medium_60Nm": {
+      "PD+CfC": {
+        "peak_err_rad": 0.23852899306965836,
+        "mae_post_mrad": 82.63706447658129,
+        "recovery_time_s": 0.5659999999998289
+      },
+      "Full": {
+        "peak_err_rad": 0.18923342276160254,
+        "mae_post_mrad": 76.57464204281071,
+        "recovery_time_s": 0.04199999999988657
+      }
+    },
+    "heavy_87Nm": {
+      "PD+CfC": {
+        "peak_err_rad": 0.5058741224573112,
+        "mae_post_mrad": 89.02366451231353,
+        "recovery_time_s": 0.7799999999998053
+      },
+      "Full": {
+        "peak_err_rad": 0.4560838826221886,
+        "mae_post_mrad": 89.09023177078056,
+        "recovery_time_s": 0.5619999999998293
+      }
+    }
+  }
+}

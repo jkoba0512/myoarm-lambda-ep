@@ -1,0 +1,15 @@
+{
+  "experiment": "2a",
+  "seed": 3,
+  "conditions": {
+    "PD": {
+      "static_mae_mrad": 158.41640843640147
+    },
+    "PD+CfC": {
+      "static_mae_mrad": 84.67479870356681
+    },
+    "Full": {
+      "static_mae_mrad": 78.10486006251769
+    }
+  }
+}

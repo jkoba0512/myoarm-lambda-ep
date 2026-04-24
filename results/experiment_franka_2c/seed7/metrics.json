@@ -1,0 +1,18 @@
+{
+  "experiment": "2c",
+  "seed": 7,
+  "conditions": {
+    "CPG+CfC": {
+      "ep_err_pre_mrad": 138.22379519933614,
+      "ep_err_post_mrad": 346.3795307808046,
+      "mae_post_mrad": 135.6641473811008,
+      "recovery_time_s": 1.5979999999997156
+    },
+    "CPG+CfC+LIF_FB": {
+      "ep_err_pre_mrad": 140.2818403472801,
+      "ep_err_post_mrad": 341.3843231118402,
+      "mae_post_mrad": 133.84770775776929,
+      "recovery_time_s": 1.5959999999997159
+    }
+  }
+}
