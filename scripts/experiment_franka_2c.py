@@ -32,6 +32,8 @@
 
 from __future__ import annotations
 
+import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -49,7 +51,6 @@ from common.franka_neural_controller import FrankaNeuralController
 
 RESULTS_DIR = ROOT / "results" / "experiment_franka_2c"
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-CFC_PATH    = ROOT / "results" / "experiment_franka_2a" / "cfc_cerebellum.pt"
 
 DEVICE       = "cuda" if _torch.cuda.is_available() else "cpu"
 SIM_DURATION = 9.0   # 3s 安定 + 6s 負荷応答を観察
@@ -160,24 +161,37 @@ def run_episode(
 
 
 # ──────────────────────────────────────────────────────────────────────
+def parse_args() -> argparse.Namespace:
+    p = argparse.ArgumentParser()
+    p.add_argument("--seed", type=int, default=42, help="乱数シード")
+    return p.parse_args()
+
+
 def main():
+    args   = parse_args()
+    seed   = args.seed
+    outdir = RESULTS_DIR / f"seed{seed}"
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    cfc_path = ROOT / "results" / "experiment_franka_2a" / f"seed{seed}" / "cfc_cerebellum.pt"
+    if not cfc_path.exists():
+        print(f"ERROR: {cfc_path} が見つかりません。先に experiment_franka_2a.py --seed {seed} を実行してください。")
+        return
+
+    print(f"seed={seed}  out={outdir}")
+
     env     = FrankaEnv()
     q_range = env.ctrl_range
 
-    if not CFC_PATH.exists():
-        print(f"ERROR: {CFC_PATH} が見つかりません。先に experiment_franka_2a.py を実行してください。")
-        return
-
     conditions = [
-        ("CPG + 小脳（FB なし）",         dict(use_proprioceptor=False, cpg_alpha_fb=0.0)),
-        ("CPG + 小脳 + LIF 固有受容器 FB", dict(use_proprioceptor=True,  cpg_alpha_fb=0.3)),
+        ("CPG+CfC",        dict(use_proprioceptor=False, cpg_alpha_fb=0.0)),
+        ("CPG+CfC+LIF_FB", dict(use_proprioceptor=True,  cpg_alpha_fb=0.3)),
     ]
 
     results = {}
     print("=== 実験 2-C (Franka): 2点間サイクリック動作 + LIF 固有受容器 FB 評価 ===")
     print(f"  タスク: J2 が ±{CPG_PARAMS['amplitude']} rad を往復（CPG 振動）")
     print(f"  持続負荷: t={LOAD_T}s 以降 J2 に {TAU_LOAD[1]:.0f} Nm を印加")
-    print(f"  両条件に小脳あり（重力補償）")
 
     for label, flags in conditions:
         ctrl = FrankaNeuralController(
@@ -188,7 +202,7 @@ def main():
             device=DEVICE,
             **flags,
         )
-        ctrl.load_cerebellum(str(CFC_PATH))
+        ctrl.load_cerebellum(str(cfc_path))
         log = run_episode(ctrl, env)
         results[label] = log
 
@@ -201,28 +215,39 @@ def main():
               f"負荷後: {log['mae_post']*1000:.2f} mrad  収束時間: {rt_str}")
 
     # ── 改善率 ────────────────────────────────────────────────────
-    label_no = "CPG + 小脳（FB なし）"
-    label_fb = "CPG + 小脳 + LIF 固有受容器 FB"
-    ep_no = results[label_no]["ep_err_post"]
-    ep_fb = results[label_fb]["ep_err_post"]
+    ep_no = results["CPG+CfC"]["ep_err_post"]
+    ep_fb = results["CPG+CfC+LIF_FB"]["ep_err_post"]
     if not np.isnan(ep_no) and ep_no > 0:
         print(f"\n  LIF FB によるエンドポイント誤差改善率（負荷後）: "
               f"{(ep_no - ep_fb) / ep_no * 100:.2f}%  "
               f"({ep_no*1000:.2f} → {ep_fb*1000:.2f} mrad)")
 
-    # ── 保存 ──────────────────────────────────────────────────────
+    # ── 標準化 JSON 保存 ──────────────────────────────────────────
+    summary: dict = {"experiment": "2c", "seed": seed, "conditions": {}}
+    for label, log in results.items():
+        rt = log["recovery_time"]
+        summary["conditions"][label] = {
+            "ep_err_pre_mrad":  float(log["ep_err_pre"]  * 1000),
+            "ep_err_post_mrad": float(log["ep_err_post"] * 1000),
+            "mae_post_mrad":    float(log["mae_post"]    * 1000),
+            "recovery_time_s":  float(rt) if rt is not None else None,
+        }
+    with open(outdir / "metrics.json", "w") as f:
+        json.dump(summary, f, indent=2, ensure_ascii=False)
+
+    # ── 保存（npz） ───────────────────────────────────────────────
     np.savez(
-        str(RESULTS_DIR / "metrics.npz"),
-        **{f"{label.replace(' ', '_')}_{k}": v
+        str(outdir / "metrics.npz"),
+        **{f"{label}_{k}": v
            for label, log in results.items()
            for k, v in log.items()
            if v is not None and isinstance(v, (np.ndarray, float, int))},
     )
 
     # ── プロット ──────────────────────────────────────────────────
-    colors = {label_no: "tab:orange", label_fb: "tab:green"}
+    colors = {"CPG+CfC": "tab:orange", "CPG+CfC+LIF_FB": "tab:green"}
     fig, axes = plt.subplots(2, 2, figsize=(14, 9))
-    fig.suptitle("Experiment 2-C (Franka Panda): 2-Point Cyclic Motion\n"
+    fig.suptitle(f"Experiment 2-C (Franka Panda): 2-Point Cyclic Motion  [seed={seed}]\n"
                  "LIF Proprioceptor FB under sustained load "
                  f"({TAU_LOAD[1]:.0f} Nm on J2 at t={LOAD_T}s)", fontsize=11)
 
@@ -231,14 +256,14 @@ def main():
         ax.axvspan(LOAD_T, SIM_DURATION, alpha=0.04, color="red", label="post-load")
         ax.axvline(LOAD_T, color="red", lw=1.5, ls="--", alpha=0.8)
 
-    # 上左: J2 追従（参照 vs 実関節角）
+    log_fb = results["CPG+CfC+LIF_FB"]
+
     ax = axes[0, 0]
-    log_fb = results[label_fb]
     ax.plot(log_fb["t"], log_fb["q_ref"][:, ENDPOINT_JOINT], "--",
             color="black", alpha=0.5, lw=1.0, label="CPG ref")
     for label, log in results.items():
         ax.plot(log["t"], log["q"][:, ENDPOINT_JOINT],
-                label=label[:10], color=colors[label], lw=1.2)
+                label=label, color=colors[label], lw=1.2)
     shade(ax)
     ax.set_ylabel("J2 angle [rad]")
     ax.set_title("J2 joint tracking (cyclic motion)")
@@ -246,11 +271,10 @@ def main():
     ax.grid(True, alpha=0.3)
     ax.set_xlabel("Time [s]")
 
-    # 上右: J2 追従誤差
     ax = axes[0, 1]
     for label, log in results.items():
         err = np.abs(log["q"][:, ENDPOINT_JOINT] - log["q_ref"][:, ENDPOINT_JOINT])
-        ax.plot(log["t"], err * 1000, label=label[:20], color=colors[label], lw=1.0)
+        ax.plot(log["t"], err * 1000, label=label, color=colors[label], lw=1.0)
     shade(ax)
     ax.set_ylabel("J2 tracking error [mrad]")
     ax.set_title("J2 tracking error over time")
@@ -258,7 +282,6 @@ def main():
     ax.grid(True, alpha=0.3)
     ax.set_xlabel("Time [s]")
 
-    # 下左: LIF 発火率（FB ありのみ、J1-J4）
     ax = axes[1, 0]
     for i in range(4):
         ax.plot(log_fb["t"], log_fb["r_q"][:, i],
@@ -270,18 +293,17 @@ def main():
     ax.grid(True, alpha=0.3)
     ax.set_xlabel("Time [s]")
 
-    # 下右: エンドポイント誤差比較（負荷前後）
     ax = axes[1, 1]
-    labels_bar = list(results.keys())
-    ep_pre  = [results[l]["ep_err_pre"]  * 1000 for l in labels_bar]
-    ep_post = [results[l]["ep_err_post"] * 1000 for l in labels_bar]
-    x = np.arange(len(labels_bar))
-    b1 = ax.bar(x - 0.2, ep_pre,  0.35, label="Pre-load [mrad]",
-                color=[colors[l] for l in labels_bar], alpha=0.4)
+    cond_keys = list(results.keys())
+    ep_pre  = [results[l]["ep_err_pre"]  * 1000 for l in cond_keys]
+    ep_post = [results[l]["ep_err_post"] * 1000 for l in cond_keys]
+    x = np.arange(len(cond_keys))
+    ax.bar(x - 0.2, ep_pre,  0.35, label="Pre-load [mrad]",
+           color=[colors[l] for l in cond_keys], alpha=0.4)
     b2 = ax.bar(x + 0.2, ep_post, 0.35, label="Post-load [mrad]",
-                color=[colors[l] for l in labels_bar], alpha=0.9)
+                color=[colors[l] for l in cond_keys], alpha=0.9)
     ax.set_xticks(x)
-    ax.set_xticklabels([l[:20] for l in labels_bar], fontsize=7, rotation=10, ha="right")
+    ax.set_xticklabels(cond_keys, fontsize=7, rotation=10, ha="right")
     ax.set_ylabel("Endpoint error [mrad]")
     ax.set_title("Endpoint reaching error\n(peak/trough of each cycle)")
     ax.legend(fontsize=8)
@@ -291,8 +313,9 @@ def main():
                 f"{bar.get_height():.1f}", ha="center", va="bottom", fontsize=8)
 
     plt.tight_layout()
-    path = str(RESULTS_DIR / "plot_franka_2c.png")
+    path = str(outdir / "plot_franka_2c.png")
     plt.savefig(path, dpi=150)
+    plt.close()
     print(f"\nプロット保存: {path}")
 
 

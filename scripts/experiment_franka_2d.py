@@ -26,6 +26,8 @@
 
 from __future__ import annotations
 
+import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -43,7 +45,6 @@ from common.franka_neural_controller import FrankaNeuralController
 
 RESULTS_DIR = ROOT / "results" / "experiment_franka_2d"
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-CFC_PATH    = ROOT / "results" / "experiment_franka_2a" / "cfc_cerebellum.pt"
 
 DEVICE       = "cuda" if _torch.cuda.is_available() else "cpu"
 SIM_DURATION = 8.0
@@ -123,30 +124,44 @@ def run_episode(
 
 
 # ──────────────────────────────────────────────────────────────────────
+def parse_args() -> argparse.Namespace:
+    p = argparse.ArgumentParser()
+    p.add_argument("--seed", type=int, default=42, help="乱数シード")
+    return p.parse_args()
+
+
 def main():
+    args   = parse_args()
+    seed   = args.seed
+    outdir = RESULTS_DIR / f"seed{seed}"
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    cfc_path = ROOT / "results" / "experiment_franka_2a" / f"seed{seed}" / "cfc_cerebellum.pt"
+    if not cfc_path.exists():
+        print(f"ERROR: {cfc_path} が見つかりません。先に experiment_franka_2a.py --seed {seed} を実行してください。")
+        return
+
+    print(f"seed={seed}  out={outdir}")
+
     env     = FrankaEnv()
     q_range = env.ctrl_range
 
-    if not CFC_PATH.exists():
-        print(f"ERROR: {CFC_PATH} が見つかりません。先に experiment_franka_2a.py を実行してください。")
-        return
-
     def make_ctrl(label: str) -> FrankaNeuralController:
-        if label == "PD のみ":
+        if label == "PD":
             return FrankaNeuralController(
                 dt=env.dt, q_range=q_range,
                 cpg_params=CPG_PARAMS,
                 use_proprioceptor=False, use_reflex=False, use_cerebellum=False,
                 cpg_alpha_fb=0.0, device=DEVICE,
             )
-        elif label == "PD + 小脳":
+        elif label == "PD+CfC":
             ctrl = FrankaNeuralController(
                 dt=env.dt, q_range=q_range,
                 cpg_params=CPG_PARAMS,
                 use_proprioceptor=False, use_reflex=False, use_cerebellum=True,
                 cpg_alpha_fb=0.0, device=DEVICE,
             )
-            ctrl.load_cerebellum(str(CFC_PATH))
+            ctrl.load_cerebellum(str(cfc_path))
             return ctrl
         else:  # Full
             ctrl = FrankaNeuralController(
@@ -155,11 +170,11 @@ def main():
                 use_proprioceptor=False, use_reflex=True, use_cerebellum=True,
                 cpg_alpha_fb=0.0, device=DEVICE,
             )
-            ctrl.load_cerebellum(str(CFC_PATH))
+            ctrl.load_cerebellum(str(cfc_path))
             return ctrl
 
-    labels = ["PD のみ", "PD + 小脳", "Full（提案）"]
-    colors = {"PD のみ": "tab:gray", "PD + 小脳": "tab:blue", "Full（提案）": "tab:green"}
+    labels = ["PD", "PD+CfC", "Full"]
+    colors = {"PD": "tab:gray", "PD+CfC": "tab:blue", "Full": "tab:green"}
 
     print("=== 実験 2-D (Franka): 統合評価（静止保持） ===")
     results_free = {}
@@ -177,17 +192,29 @@ def main():
         rd = results_dist[label]
         rt = rd["recovery_time"]
         rt_str = f"{rt:.3f} s" if rt else "未回復"
-        print(f"  {label:12s}  外乱なしMAE: {rf['mae']*1000:.2f} mrad  "
+        print(f"  {label:8s}  外乱なしMAE: {rf['mae']*1000:.2f} mrad  "
               f"ピーク誤差: {rd['peak_err']:.4f} rad  回復時間: {rt_str}")
 
-    # ── 保存 ──────────────────────────────────────────────────────
+    # ── 標準化 JSON 保存 ──────────────────────────────────────────
+    summary: dict = {"experiment": "2d", "seed": seed, "conditions": {}}
+    for label in labels:
+        rt = results_dist[label]["recovery_time"]
+        summary["conditions"][label] = {
+            "static_mae_mrad": float(results_free[label]["mae"] * 1000),
+            "peak_err_rad":    float(results_dist[label]["peak_err"]),
+            "recovery_time_s": float(rt) if rt is not None else None,
+        }
+    with open(outdir / "metrics.json", "w") as f:
+        json.dump(summary, f, indent=2, ensure_ascii=False)
+
+    # ── 保存（npz） ───────────────────────────────────────────────
     np.savez(
-        str(RESULTS_DIR / "metrics.npz"),
-        **{f"free_{label.replace(' ', '_')}_{k}": v
+        str(outdir / "metrics.npz"),
+        **{f"free_{label}_{k}": v
            for label, log in results_free.items()
            for k, v in log.items()
            if v is not None and isinstance(v, np.ndarray)},
-        **{f"dist_{label.replace(' ', '_')}_{k}": v
+        **{f"dist_{label}_{k}": v
            for label, log in results_dist.items()
            for k, v in log.items()
            if v is not None and isinstance(v, np.ndarray)},
@@ -195,8 +222,8 @@ def main():
 
     # ── プロット ──────────────────────────────────────────────────
     fig, axes = plt.subplots(3, 2, figsize=(14, 13))
-    fig.suptitle("Experiment 2-D (Franka Panda): Integrated Evaluation\n"
-                 "Static holding — PD vs PD+Cerebellum vs Full Neural System", fontsize=11)
+    fig.suptitle(f"Experiment 2-D (Franka Panda): Integrated Evaluation  [seed={seed}]\n"
+                 "Static holding — PD vs PD+CfC vs Full Neural System", fontsize=11)
 
     def shade(ax):
         ax.axvspan(DIST_T, SIM_DURATION, alpha=0.06, color="red")
@@ -287,8 +314,9 @@ def main():
                 f"{v:.1f}", ha="center", va="bottom", fontsize=9)
 
     plt.tight_layout()
-    path = str(RESULTS_DIR / "plot_franka_2d.png")
+    path = str(outdir / "plot_franka_2d.png")
     plt.savefig(path, dpi=150)
+    plt.close()
     print(f"\nプロット保存: {path}")
 
 

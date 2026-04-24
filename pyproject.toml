@@ -1,7 +1,7 @@
 [project]
-name = "lnn-arm-control"
+name = "neuro-arm-control"
 version = "0.1.0"
-description = "LNN-based robot arm control: CfC/NCP on OpenManipulator-X and SO-101"
+description = "Neuro-inspired robot arm control with Franka Panda simulation experiments and future transfer to a newly developed real robot arm"
 requires-python = ">=3.11"
 dependencies = [
     "matplotlib>=3.10.8",

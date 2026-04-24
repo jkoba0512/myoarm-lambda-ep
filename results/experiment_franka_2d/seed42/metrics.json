@@ -1,0 +1,21 @@
+{
+  "experiment": "2d",
+  "seed": 42,
+  "conditions": {
+    "PD": {
+      "static_mae_mrad": 160.48975443035005,
+      "peak_err_rad": 1.0109409266192446,
+      "recovery_time_s": null
+    },
+    "PD+CfC": {
+      "static_mae_mrad": 115.93327124907633,
+      "peak_err_rad": 0.20879875741360138,
+      "recovery_time_s": 0.05399999999977556
+    },
+    "Full": {
+      "static_mae_mrad": 116.9040422284437,
+      "peak_err_rad": 0.22085291216841502,
+      "recovery_time_s": 0.04199999999977688
+    }
+  }
+}

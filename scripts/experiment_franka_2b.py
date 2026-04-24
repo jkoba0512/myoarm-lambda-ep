@@ -19,6 +19,8 @@
 
 from __future__ import annotations
 
+import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -36,7 +38,6 @@ from common.franka_neural_controller import FrankaNeuralController
 
 RESULTS_DIR = ROOT / "results" / "experiment_franka_2b"
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-CFC_PATH    = ROOT / "results" / "experiment_franka_2a" / "cfc_cerebellum.pt"
 
 DEVICE       = "cuda" if _torch.cuda.is_available() else "cpu"
 SIM_DURATION = 6.0
@@ -48,9 +49,9 @@ CPG_PARAMS = dict(tau=0.3, tau_r=0.6, beta=2.5, w=2.0, amplitude=0.0)
 
 DIST_JOINT = 1  # J2（肩ピッチ）
 DISTURBANCE_LEVELS = {
-    "軽度 (30Nm×10steps)": (30.0, 10),
-    "中度 (60Nm×20steps)": (60.0, 20),
-    "重度 (87Nm×40steps)": (87.0, 40),
+    "light_30Nm":  (30.0, 10),
+    "medium_60Nm": (60.0, 20),
+    "heavy_87Nm":  (87.0, 40),
 }
 
 print(f"使用デバイス: {DEVICE}")
@@ -115,13 +116,27 @@ def run_episode(
 
 
 # ──────────────────────────────────────────────────────────────────────
+def parse_args() -> argparse.Namespace:
+    p = argparse.ArgumentParser()
+    p.add_argument("--seed", type=int, default=42, help="乱数シード")
+    return p.parse_args()
+
+
 def main():
+    args   = parse_args()
+    seed   = args.seed
+    outdir = RESULTS_DIR / f"seed{seed}"
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    cfc_path = ROOT / "results" / "experiment_franka_2a" / f"seed{seed}" / "cfc_cerebellum.pt"
+    if not cfc_path.exists():
+        print(f"ERROR: {cfc_path} が見つかりません。先に experiment_franka_2a.py --seed {seed} を実行してください。")
+        return
+
+    print(f"seed={seed}  out={outdir}")
+
     env     = FrankaEnv()
     q_range = env.ctrl_range
-
-    if not CFC_PATH.exists():
-        print(f"ERROR: {CFC_PATH} が見つかりません。先に experiment_franka_2a.py を実行してください。")
-        return
 
     def make_ctrl(use_reflex: bool) -> FrankaNeuralController:
         ctrl = FrankaNeuralController(
@@ -133,43 +148,55 @@ def main():
             cpg_alpha_fb=0.0,
             device=DEVICE,
         )
-        ctrl.load_cerebellum(str(CFC_PATH))
+        ctrl.load_cerebellum(str(cfc_path))
         return ctrl
 
-    results = {}
+    conditions = [("PD+CfC", False), ("Full", True)]
+    results    = {}
     print("=== 実験 2-B (Franka): 外乱耐性評価（静止保持） ===")
 
     for dist_label, (dist_torque, dist_steps) in DISTURBANCE_LEVELS.items():
         print(f"\n  外乱強度: {dist_label}")
         results[dist_label] = {}
 
-        for label, use_reflex in [("PD+小脳", False), ("Full（提案）", True)]:
+        for label, use_reflex in conditions:
             ctrl = make_ctrl(use_reflex)
             log  = run_episode(ctrl, env, dist_torque, dist_steps)
             results[dist_label][label] = log
             rt     = log["recovery_time"]
             rt_str = f"{rt:.3f} s" if rt else "未回復"
-            print(f"    {label:12s}  ピーク誤差: {log['peak_err']:.4f} rad  "
+            print(f"    {label:8s}  ピーク誤差: {log['peak_err']:.4f} rad  "
                   f"外乱後MAE: {log['mae_post']:.4f} rad  回復時間: {rt_str}")
 
-    # ── 保存 ──────────────────────────────────────────────────────
+    # ── 標準化 JSON 保存 ──────────────────────────────────────────
+    summary: dict = {"experiment": "2b", "seed": seed, "disturbance_levels": {}}
+    for dist_label, dlogs in results.items():
+        summary["disturbance_levels"][dist_label] = {}
+        for label, log in dlogs.items():
+            rt = log["recovery_time"]
+            summary["disturbance_levels"][dist_label][label] = {
+                "peak_err_rad":    float(log["peak_err"]),
+                "mae_post_mrad":   float(log["mae_post"] * 1000),
+                "recovery_time_s": float(rt) if rt is not None else None,
+            }
+    with open(outdir / "metrics.json", "w") as f:
+        json.dump(summary, f, indent=2, ensure_ascii=False)
+
+    # ── 保存（npz） ───────────────────────────────────────────────
     save_dict = {}
     for dl, dlogs in results.items():
-        key = dl.split("(")[0].strip().replace(" ", "_")
         for label, log in dlogs.items():
-            lk = label.replace("（", "").replace("）", "").replace(" ", "_")
             for k, v in log.items():
                 if v is not None and isinstance(v, np.ndarray):
-                    save_dict[f"{key}_{lk}_{k}"] = v
-    np.savez(str(RESULTS_DIR / "metrics.npz"), **save_dict)
+                    save_dict[f"{dl}_{label}_{k}"] = v
+    np.savez(str(outdir / "metrics.npz"), **save_dict)
 
     # ── プロット ──────────────────────────────────────────────────
-    n_levels = len(DISTURBANCE_LEVELS)
+    colors    = {"PD+CfC": "tab:orange", "Full": "tab:green"}
+    n_levels  = len(DISTURBANCE_LEVELS)
     fig, axes = plt.subplots(n_levels, 2, figsize=(12, 4 * n_levels))
-    fig.suptitle("Experiment 2-B (Franka Panda): Disturbance Rejection\n"
-                 "Static holding — PD+Cerebellum vs Full (with Izhikevich Reflex Arc)", fontsize=11)
-
-    colors = {"PD+小脳": "tab:orange", "Full（提案）": "tab:green"}
+    fig.suptitle(f"Experiment 2-B (Franka Panda): Disturbance Rejection  [seed={seed}]\n"
+                 "Static holding — PD+CfC vs Full (with Izhikevich Reflex Arc)", fontsize=11)
 
     for row, (dist_label, _) in enumerate(DISTURBANCE_LEVELS.items()):
         ax = axes[row, 0]
@@ -185,16 +212,15 @@ def main():
         ax.set_xlabel("Time [s]")
 
         ax = axes[row, 1]
-        labels_bar = list(results[dist_label].keys())
-        peaks = [results[dist_label][l]["peak_err"] for l in labels_bar]
-        maes  = [results[dist_label][l]["mae_post"]  for l in labels_bar]
-        x = np.arange(len(labels_bar))
+        peaks = [results[dist_label][l]["peak_err"] for l, _ in conditions]
+        maes  = [results[dist_label][l]["mae_post"]  for l, _ in conditions]
+        x = np.arange(len(conditions))
         b1 = ax.bar(x - 0.2, peaks, 0.35, label="Peak error [rad]",
-                    color=[colors[l] for l in labels_bar], alpha=0.8)
+                    color=[colors[l] for l, _ in conditions], alpha=0.8)
         ax.bar(x + 0.2, maes, 0.35, label="Post-dist MAE [rad]",
-               color=[colors[l] for l in labels_bar], alpha=0.4)
+               color=[colors[l] for l, _ in conditions], alpha=0.4)
         ax.set_xticks(x)
-        ax.set_xticklabels(labels_bar, fontsize=8)
+        ax.set_xticklabels([l for l, _ in conditions], fontsize=8)
         ax.set_ylabel("Error [rad]")
         ax.set_title(f"{dist_label}: Error summary")
         ax.legend(fontsize=8)
@@ -204,8 +230,9 @@ def main():
                     f"{bar.get_height():.3f}", ha="center", va="bottom", fontsize=8)
 
     plt.tight_layout()
-    path = str(RESULTS_DIR / "plot_franka_2b.png")
+    path = str(outdir / "plot_franka_2b.png")
     plt.savefig(path, dpi=150)
+    plt.close()
     print(f"\nプロット保存: {path}")
 
 

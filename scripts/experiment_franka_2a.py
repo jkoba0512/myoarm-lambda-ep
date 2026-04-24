@@ -21,6 +21,8 @@
 
 from __future__ import annotations
 
+import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -50,6 +52,9 @@ N_EPOCHS       = 300
 
 # CPG オフ（amplitude=0）: 静止保持タスクでは CPG は使わない
 CPG_PARAMS = dict(tau=0.3, tau_r=0.6, beta=2.5, w=2.0, amplitude=0.0)
+
+# 標準化条件ラベル
+CONDITION_LABELS = ["PD", "PD+CfC", "Full"]
 
 print(f"使用デバイス: {DEVICE}")
 
@@ -87,13 +92,23 @@ def run_episode(controller: FrankaNeuralController, env: FrankaEnv) -> dict:
 
 
 # ──────────────────────────────────────────────────────────────────────
-SEED = 42
+def parse_args() -> argparse.Namespace:
+    p = argparse.ArgumentParser()
+    p.add_argument("--seed", type=int, default=42, help="乱数シード")
+    return p.parse_args()
 
 
 def main():
+    args   = parse_args()
+    seed   = args.seed
+    outdir = RESULTS_DIR / f"seed{seed}"
+    outdir.mkdir(parents=True, exist_ok=True)
+
     # 再現性確保: モデル初期化・DataLoader shuffle を固定
-    _torch.manual_seed(SEED)
-    np.random.seed(SEED)
+    _torch.manual_seed(seed)
+    np.random.seed(seed)
+
+    print(f"seed={seed}  out={outdir}")
 
     env     = FrankaEnv()
     q_range = env.ctrl_range
@@ -114,18 +129,18 @@ def main():
         n_trajectories=N_TRAJECTORIES,
         seq_len=SEQ_LEN,
         n_epochs=N_EPOCHS,
-        verbose=True,
+        verbose=(seed == 42),
     )
-    cfc_path = str(RESULTS_DIR / "cfc_cerebellum.pt")
+    cfc_path = str(outdir / "cfc_cerebellum.pt")
     ctrl_train.save_cerebellum(cfc_path)
     print(f"小脳モデル保存: {cfc_path}")
 
     # ── アブレーション評価 ────────────────────────────────────────
     # CPG オフのため固有受容器は CPG への FB パスが無効 → 除外
     conditions = [
-        ("PD のみ",           dict(use_proprioceptor=False, use_reflex=False, use_cerebellum=False)),
-        ("PD + 小脳",         dict(use_proprioceptor=False, use_reflex=False, use_cerebellum=True)),
-        ("PD + 小脳 + 反射弓", dict(use_proprioceptor=False, use_reflex=True,  use_cerebellum=True)),
+        ("PD",    dict(use_proprioceptor=False, use_reflex=False, use_cerebellum=False)),
+        ("PD+CfC", dict(use_proprioceptor=False, use_reflex=False, use_cerebellum=True)),
+        ("Full",  dict(use_proprioceptor=False, use_reflex=True,  use_cerebellum=True)),
     ]
 
     results = {}
@@ -143,28 +158,40 @@ def main():
 
         log = run_episode(ctrl, env)
         results[label] = log
-        print(f"  {label:22s}  MAE: {log['mae']*1000:.2f} mrad")
+        print(f"  {label:8s}  MAE: {log['mae']*1000:.2f} mrad")
 
-    # ── 保存 ──────────────────────────────────────────────────────
+    # ── 標準化 JSON 保存 ──────────────────────────────────────────
+    summary = {
+        "experiment": "2a",
+        "seed": seed,
+        "conditions": {
+            label: {"static_mae_mrad": float(results[label]["mae"] * 1000)}
+            for label, _ in conditions
+        },
+    }
+    with open(outdir / "metrics.json", "w") as f:
+        json.dump(summary, f, indent=2, ensure_ascii=False)
+
+    # ── 保存（npz） ───────────────────────────────────────────────
     np.savez(
-        str(RESULTS_DIR / "metrics.npz"),
+        str(outdir / "metrics.npz"),
         loss_hist=np.array(loss_hist),
-        **{f"{label.replace(' ', '_')}_mae": results[label]["mae"]  for label, _ in conditions},
-        **{f"{label.replace(' ', '_')}_err": results[label]["err"]  for label, _ in conditions},
+        **{f"{label}_mae": results[label]["mae"]  for label, _ in conditions},
+        **{f"{label}_err": results[label]["err"]  for label, _ in conditions},
     )
 
     # ── プロット ──────────────────────────────────────────────────
     colors = ["tab:gray", "tab:blue", "tab:green"]
     fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-    fig.suptitle("Experiment 2-A (Franka Panda): Ablation Study\n"
+    fig.suptitle(f"Experiment 2-A (Franka Panda): Ablation Study  [seed={seed}]\n"
                  "Static holding task — CPG disabled (biologically accurate)", fontsize=11)
 
     ax = axes[0]
-    labels = [l for l, _ in conditions]
-    maes   = [results[l]["mae"] * 1000 for l in labels]
-    bars   = ax.bar(range(len(labels)), maes, color=colors, alpha=0.8)
-    ax.set_xticks(range(len(labels)))
-    ax.set_xticklabels(labels, fontsize=8, rotation=12, ha="right")
+    labels_plot = [l for l, _ in conditions]
+    maes        = [results[l]["mae"] * 1000 for l in labels_plot]
+    bars        = ax.bar(range(len(labels_plot)), maes, color=colors, alpha=0.8)
+    ax.set_xticks(range(len(labels_plot)))
+    ax.set_xticklabels(labels_plot, fontsize=8, rotation=12, ha="right")
     ax.set_ylabel("MAE [mrad]")
     ax.set_title("Mean Absolute Error")
     for bar, v in zip(bars, maes):
@@ -190,13 +217,14 @@ def main():
     ax.grid(True, alpha=0.3)
 
     plt.tight_layout()
-    path = str(RESULTS_DIR / "plot_franka_2a.png")
+    path = str(outdir / "plot_franka_2a.png")
     plt.savefig(path, dpi=150)
+    plt.close()
     print(f"\nプロット保存: {path}")
 
     print("\n=== 結果サマリ ===")
     for label, _ in conditions:
-        print(f"  {label:22s}  MAE: {results[label]['mae']*1000:.2f} mrad")
+        print(f"  {label:8s}  MAE: {results[label]['mae']*1000:.2f} mrad")
 
 
 if __name__ == "__main__":
