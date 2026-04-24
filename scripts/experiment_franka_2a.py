@@ -87,7 +87,14 @@ def run_episode(controller: FrankaNeuralController, env: FrankaEnv) -> dict:
 
 
 # ──────────────────────────────────────────────────────────────────────
+SEED = 42
+
+
 def main():
+    # 再現性確保: モデル初期化・DataLoader shuffle を固定
+    _torch.manual_seed(SEED)
+    np.random.seed(SEED)
+
     env     = FrankaEnv()
     q_range = env.ctrl_range
 

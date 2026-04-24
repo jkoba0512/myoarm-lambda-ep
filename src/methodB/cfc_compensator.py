@@ -204,6 +204,7 @@ class CfCGravityCompensator:
         batch_size: int = 32,
         lr: float = 1e-3,
         verbose: bool = True,
+        seed: int = 42,
     ) -> list[float]:
         """
         シーケンスデータで教師あり学習（Fix 3）。
@@ -232,7 +233,8 @@ class CfCGravityCompensator:
         )  # (N, T, 3)
 
         dataset = TensorDataset(X, Y)
-        loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+        _gen = torch.Generator().manual_seed(seed)
+        loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, generator=_gen)
 
         optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
