@@ -1,0 +1,87 @@
+{
+  "experiment": "e3",
+  "seed": 3,
+  "sweep_name": "sweep11",
+  "ia_latency_ms": 20.0,
+  "latency_ok": true,
+  "results": {
+    "D0": {
+      "E3-PD": {
+        "mae_mrad": 160.64970557722626,
+        "peak_err_rad": 1.0183723463765277,
+        "recovery_time_s": null,
+        "mae_post_mrad": 750.491891110246
+      },
+      "E3-cc": {
+        "mae_mrad": 157.06877921377432,
+        "peak_err_rad": 0.9952505939026488,
+        "recovery_time_s": null,
+        "mae_post_mrad": 738.7498475855934
+      },
+      "E3-ia_ib": {
+        "mae_mrad": 159.27835982147195,
+        "peak_err_rad": 0.9292375265447288,
+        "recovery_time_s": null,
+        "mae_post_mrad": 733.0573998605639
+      },
+      "E3-cc+ia_ib": {
+        "mae_mrad": 156.00046234915658,
+        "peak_err_rad": 0.9229730942063008,
+        "recovery_time_s": null,
+        "mae_post_mrad": 731.8299737914409
+      }
+    },
+    "D1": {
+      "E3-PD": {
+        "mae_mrad": 255.49277618360057,
+        "peak_err_rad": 1.8474653179618685,
+        "recovery_time_s": null,
+        "mae_post_mrad": 1568.657298728929
+      },
+      "E3-cc": {
+        "mae_mrad": 248.32272461819727,
+        "peak_err_rad": 1.80620340103112,
+        "recovery_time_s": null,
+        "mae_post_mrad": 1539.6696328911673
+      },
+      "E3-ia_ib": {
+        "mae_mrad": 243.32894648162727,
+        "peak_err_rad": 1.7589879758358242,
+        "recovery_time_s": null,
+        "mae_post_mrad": 1554.7938693714025
+      },
+      "E3-cc+ia_ib": {
+        "mae_mrad": 231.898068011265,
+        "peak_err_rad": 1.7450170054164638,
+        "recovery_time_s": null,
+        "mae_post_mrad": 1550.1650311779813
+      }
+    },
+    "D5": {
+      "E3-PD": {
+        "mae_mrad": 278.9994964550698,
+        "peak_err_rad": 2.0694075936725564,
+        "recovery_time_s": null,
+        "mae_post_mrad": 2059.6555521204805
+      },
+      "E3-cc": {
+        "mae_mrad": 274.8304520198561,
+        "peak_err_rad": 2.0695550912413405,
+        "recovery_time_s": null,
+        "mae_post_mrad": 2060.0988409873353
+      },
+      "E3-ia_ib": {
+        "mae_mrad": 263.0827791050432,
+        "peak_err_rad": 2.0869717626068285,
+        "recovery_time_s": null,
+        "mae_post_mrad": 2055.071484387708
+      },
+      "E3-cc+ia_ib": {
+        "mae_mrad": 257.48007932420285,
+        "peak_err_rad": 2.0948299168135818,
+        "recovery_time_s": null,
+        "mae_post_mrad": 2053.740811845191
+      }
+    }
+  }
+}

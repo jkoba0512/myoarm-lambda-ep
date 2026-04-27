@@ -1,0 +1,85 @@
+{
+  "experiment": "e2",
+  "seed": 4,
+  "sweep_name": "sweep11",
+  "results": {
+    "D0": {
+      "E2-PD": {
+        "mae_mrad": 160.66253351284735,
+        "peak_err_rad": 1.0116140880489015,
+        "recovery_time_s": null,
+        "mae_post_mrad": 749.9950516675947
+      },
+      "E2-reflex": {
+        "mae_mrad": 142.30373222881536,
+        "peak_err_rad": 0.8638927065479791,
+        "recovery_time_s": null,
+        "mae_post_mrad": 605.6748835969568
+      },
+      "E2-cc": {
+        "mae_mrad": 157.09964513411563,
+        "peak_err_rad": 0.9890528365154831,
+        "recovery_time_s": null,
+        "mae_post_mrad": 738.4716378048299
+      },
+      "E2-cc+ref": {
+        "mae_mrad": 138.7524777214817,
+        "peak_err_rad": 0.8420640698813016,
+        "recovery_time_s": null,
+        "mae_post_mrad": 595.6336118840743
+      }
+    },
+    "D1": {
+      "E2-PD": {
+        "mae_mrad": 255.4529004163946,
+        "peak_err_rad": 1.8421600609396998,
+        "recovery_time_s": null,
+        "mae_post_mrad": 1567.6087743367034
+      },
+      "E2-reflex": {
+        "mae_mrad": 246.29813364108142,
+        "peak_err_rad": 1.7832504252823276,
+        "recovery_time_s": null,
+        "mae_post_mrad": 1505.5496442371095
+      },
+      "E2-cc": {
+        "mae_mrad": 248.32254534727193,
+        "peak_err_rad": 1.8019473614276167,
+        "recovery_time_s": null,
+        "mae_post_mrad": 1539.157097851097
+      },
+      "E2-cc+ref": {
+        "mae_mrad": 239.07312012696997,
+        "peak_err_rad": 1.7419462875629403,
+        "recovery_time_s": null,
+        "mae_post_mrad": 1476.627334802348
+      }
+    },
+    "D5": {
+      "E2-PD": {
+        "mae_mrad": 279.0153249387365,
+        "peak_err_rad": 2.0715729093993214,
+        "recovery_time_s": null,
+        "mae_post_mrad": 2059.795395549185
+      },
+      "E2-reflex": {
+        "mae_mrad": 277.2184054548881,
+        "peak_err_rad": 2.07074774158801,
+        "recovery_time_s": null,
+        "mae_post_mrad": 2059.9410582431665
+      },
+      "E2-cc": {
+        "mae_mrad": 274.83887155885714,
+        "peak_err_rad": 2.0699196816772396,
+        "recovery_time_s": null,
+        "mae_post_mrad": 2060.2345365172428
+      },
+      "E2-cc+ref": {
+        "mae_mrad": 273.0661741689105,
+        "peak_err_rad": 2.069244319539494,
+        "recovery_time_s": null,
+        "mae_post_mrad": 2060.3562488259213
+      }
+    }
+  }
+}
