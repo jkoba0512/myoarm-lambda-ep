@@ -1,0 +1,54 @@
+{
+  "experiment": "e1",
+  "seed": 42,
+  "sweep_name": "smoke_gate3",
+  "static": {
+    "E1-A0": {
+      "mae_mrad": 113.49845800839903,
+      "pred_err_mean_mrad": null
+    },
+    "E1-MLP": {
+      "mae_mrad": 105.10517639378195,
+      "pred_err_mean_mrad": null
+    },
+    "E1-fwd": {
+      "mae_mrad": 113.3263886404858,
+      "pred_err_mean_mrad": 113.38520180400143
+    },
+    "E1-fwd-online": {
+      "mae_mrad": 113.32627031024961,
+      "pred_err_mean_mrad": 113.39483293530058
+    }
+  },
+  "disturbance": {
+    "E1-A0": {
+      "peak_err_rad": 0.20858148964923023,
+      "mae_post_mrad": 112.69991258773351,
+      "recovery_time_s": 0.05399999999988525,
+      "adapt_time_s": null
+    },
+    "E1-MLP": {
+      "peak_err_rad": 0.4383014562591653,
+      "mae_post_mrad": 107.71566292598874,
+      "recovery_time_s": null,
+      "adapt_time_s": null
+    },
+    "E1-fwd": {
+      "peak_err_rad": 0.8503160676694026,
+      "mae_post_mrad": 131.0607510188087,
+      "recovery_time_s": null,
+      "adapt_time_s": null
+    },
+    "E1-fwd-online": {
+      "peak_err_rad": 0.8502912424325144,
+      "mae_post_mrad": 131.05168329858526,
+      "recovery_time_s": null,
+      "adapt_time_s": null
+    }
+  },
+  "training": {
+    "n_epochs": 300,
+    "n_traj": 500,
+    "fwd_final_loss": 0.16852981424331664
+  }
+}

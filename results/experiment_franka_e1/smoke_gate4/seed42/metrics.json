@@ -1,0 +1,54 @@
+{
+  "experiment": "e1",
+  "seed": 42,
+  "sweep_name": "smoke_gate4",
+  "static": {
+    "E1-A0": {
+      "mae_mrad": 113.49845800839903,
+      "pred_err_mean_mrad": null
+    },
+    "E1-MLP": {
+      "mae_mrad": 105.10517639378195,
+      "pred_err_mean_mrad": null
+    },
+    "E1-fwd": {
+      "mae_mrad": 158.3840924822065,
+      "pred_err_mean_mrad": 0.13158634167569974
+    },
+    "E1-fwd-online": {
+      "mae_mrad": 158.38500227507,
+      "pred_err_mean_mrad": 0.17453187073726867
+    }
+  },
+  "disturbance": {
+    "E1-A0": {
+      "peak_err_rad": 0.20858148964923023,
+      "mae_post_mrad": 112.69991258773351,
+      "recovery_time_s": 0.05399999999988525,
+      "adapt_time_s": null
+    },
+    "E1-MLP": {
+      "peak_err_rad": 0.4383014562591653,
+      "mae_post_mrad": 107.71566292598874,
+      "recovery_time_s": null,
+      "adapt_time_s": null
+    },
+    "E1-fwd": {
+      "peak_err_rad": 1.0145445355503224,
+      "mae_post_mrad": 170.9889266943166,
+      "recovery_time_s": null,
+      "adapt_time_s": null
+    },
+    "E1-fwd-online": {
+      "peak_err_rad": 1.0144869217690473,
+      "mae_post_mrad": 170.97913836807118,
+      "recovery_time_s": null,
+      "adapt_time_s": null
+    }
+  },
+  "training": {
+    "n_epochs": 300,
+    "n_traj": 500,
+    "fwd_final_loss": 0.16852981424331664
+  }
+}
