@@ -29,6 +29,7 @@ from methodE.lif_proprioceptor import LIFProprioceptor
 from methodE.izhikevich_reflex import IzhikevichReflexArc
 from methodE.virtual_cocontraction import VirtualCocontraction
 from methodE.ia_ib_reflex import IaIbReflexArc
+from common.motor_cortex_analog import MotorCortexAnalog
 
 # Franka Panda トルク上限 [Nm]
 _TAU_LIMIT = np.array([87, 87, 87, 87, 12, 12, 12], dtype=np.float64)
@@ -63,6 +64,8 @@ class FrankaNeuralController:
     use_cocontraction  : VirtualCocontraction（仮想コ・コントラクション）を使用するか [E2]
     use_ia_ib_reflex   : True なら IaIbReflexArc（Ia/Ib ベース）[E3]
                          False なら IzhikevichReflexArc（位置誤差ベース, 旧実装）
+    use_motor_cortex   : MotorCortexAnalog（運動皮質アナログ）を使用するか [E4]
+    motor_cortex_params: MotorCortexAnalog への追加キーワード引数
     cpg_alpha_fb       : CPG 固有受容器フィードバックゲイン
     cfc_hidden_units   : CfC モデルの hidden_units
     K_cereb            : Forward model の補正ゲイン (7,) [Nm/rad]。None でデフォルト。
@@ -89,6 +92,8 @@ class FrankaNeuralController:
         use_forward_model:   bool              = False,
         use_cocontraction:   bool              = False,
         use_ia_ib_reflex:    bool              = False,
+        use_motor_cortex:    bool              = False,
+        motor_cortex_params: dict | None       = None,
         cpg_alpha_fb:        float             = 0.3,
         cfc_hidden_units:    int               = 64,
         K_cereb:             np.ndarray | None = None,
@@ -105,6 +110,7 @@ class FrankaNeuralController:
         self.use_forward_model = use_forward_model
         self.use_cocontraction = use_cocontraction
         self.use_ia_ib_reflex  = use_ia_ib_reflex
+        self.use_motor_cortex  = use_motor_cortex
 
         # Franka デフォルト可動域（panda_torque.xml の joint range に準拠）
         if q_range is None:
@@ -164,7 +170,15 @@ class FrankaNeuralController:
                 _cc_kw.update(cocontraction_params)
             self.cocontraction = VirtualCocontraction(**_cc_kw)
 
-        # ── 4b. 小脳 ─────────────────────────────────────────────
+        # ── 4b. 運動皮質アナログ（E4）────────────────────────────
+        self.motor_cortex: MotorCortexAnalog | None = None
+        if use_motor_cortex:
+            _mca_kw: dict = dict(n_joints=n, dt=dt)
+            if motor_cortex_params:
+                _mca_kw.update(motor_cortex_params)
+            self.motor_cortex = MotorCortexAnalog(**_mca_kw)
+
+        # ── 4c. 小脳 ─────────────────────────────────────────────
         # use_forward_model=True  : CfCForwardModel（順動力学, Phase E1〜）
         # use_forward_model=False : CfCGravityCompensator（逆動力学, 旧実装）
         self.cerebellum: CfCGravityCompensator | None = None
@@ -199,6 +213,8 @@ class FrankaNeuralController:
             self.reflex_ia_ib.reset()
         if self.cocontraction is not None:
             self.cocontraction.reset()
+        if self.motor_cortex is not None:
+            self.motor_cortex.reset()
         if self.cerebellum is not None:
             self.cerebellum.reset()
         if self.cerebellum_fwd is not None:
@@ -248,7 +264,24 @@ class FrankaNeuralController:
             # Forward model 固有フィールド（use_forward_model=False では None）
             "q_hat":            None,
             "pred_error":       None,
+            # E4: 運動皮質アナログ
+            "mca_task_mode":    None,
+            "mca_cc_target":    None,
+            "mca_cpg_amplitude": None,
         }
+
+        # ── 0. 運動皮質アナログ（E4）─────────────────────────────
+        # MCA を先に呼び出し、CPG 振幅と cc_target を取得する。
+        # cocontraction が有効な場合は cc_target で tau_cc を上書きする。
+        mca_cc_target    : np.ndarray | None = None
+        mca_cpg_amplitude: float | None      = None
+        if self.motor_cortex is not None:
+            mca_out = self.motor_cortex.step(q, dq, q_ref)
+            mca_cc_target     = mca_out["cc_target"]
+            mca_cpg_amplitude = mca_out["cpg_amplitude"]
+            info["mca_task_mode"]     = mca_out["task_mode"]
+            info["mca_cc_target"]     = mca_cc_target.copy()
+            info["mca_cpg_amplitude"] = mca_cpg_amplitude
 
         # ── 1. 固有受容器 ─────────────────────────────────────────
         r_q = None
@@ -258,6 +291,9 @@ class FrankaNeuralController:
             info["r_dq"] = r_dq
 
         # ── 2. CPG（固有受容器 FB を注入）────────────────────────
+        # E4: MCA が cpg_amplitude を動的に上書きする
+        if mca_cpg_amplitude is not None:
+            self.cpg.amplitude = mca_cpg_amplitude
         q_cpg = self.cpg.step(I=cpg_I, r_q=r_q)
         q_target = q_ref + q_cpg
         q_target = np.clip(q_target, self.q_range[:, 0], self.q_range[:, 1])
@@ -293,12 +329,29 @@ class FrankaNeuralController:
                 info["tau_sys"] = self.cerebellum.get_tau_sys()
         info["tau_comp"] = tau_comp
 
-        # ── 5. 仮想コ・コントラクション（E2）──────────────────────
+        # ── 5. 仮想コ・コントラクション（E2）+ E4 MCA オーバーライド ─
         tau_virtual = np.zeros(self.N_JOINTS)
         if self.cocontraction is not None:
             tau_virtual, tau_cc = self.cocontraction.step(q, dq, q_target)
+            # E4: MCA の cc_target で上書き（追加インピーダンスを再計算）
+            if mca_cc_target is not None:
+                # K_virt / B_virt はデフォルトゲインを使って再計算
+                k_gain = self.cocontraction.k_virtual_gain
+                b_gain = self.cocontraction.b_virtual_gain
+                err    = q_target - q
+                tau_virtual = k_gain * mca_cc_target * err + b_gain * mca_cc_target * (-dq)
+                tau_cc      = mca_cc_target
             info["tau_virtual"] = tau_virtual
             info["tau_cc"]      = tau_cc
+        elif mca_cc_target is not None:
+            # cocontraction モジュールなしで MCA のみ有効な場合
+            # シンプルな追加インピーダンス（デフォルトゲイン）
+            k_gain = 0.3
+            b_gain = 0.1
+            err    = q_target - q
+            tau_virtual = k_gain * mca_cc_target * err + b_gain * mca_cc_target * (-dq)
+            info["tau_virtual"] = tau_virtual
+            info["tau_cc"]      = mca_cc_target
 
         # ── 6. 反射弓 ─────────────────────────────────────────────
         tau_reflex = np.zeros(self.N_JOINTS)
@@ -332,6 +385,22 @@ class FrankaNeuralController:
         )
 
         return tau_total, info
+
+    # ------------------------------------------------------------------
+    # 運動皮質アナログ（E4）制御 API
+    # ------------------------------------------------------------------
+
+    def set_task_mode(self, mode: str) -> None:
+        """
+        MCA のタスクモードを外部から設定する。
+        use_motor_cortex=True のときのみ有効。
+
+        Parameters
+        ----------
+        mode : "hold" または "oscillate"
+        """
+        if self.motor_cortex is not None:
+            self.motor_cortex.set_task_mode(mode)
 
     # ------------------------------------------------------------------
     # Forward model 更新（env.step() 後に呼ぶ）
