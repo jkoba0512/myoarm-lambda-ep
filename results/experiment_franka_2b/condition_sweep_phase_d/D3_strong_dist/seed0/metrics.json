@@ -1,0 +1,28 @@
+{
+  "experiment": "2b",
+  "seed": 0,
+  "sweep_name": "condition_sweep_phase_d/D3_strong_dist",
+  "disturbance_time_s": 3.0,
+  "disturbance_joint": 1,
+  "q_init_noise": 0.0,
+  "pd_gain_scale": 1.0,
+  "obs_noise_std": 0.0,
+  "obs_delay_steps": 0,
+  "torque_saturation": null,
+  "model_mass_scale": 1.0,
+  "model_friction_scale": 1.0,
+  "disturbance_levels": {
+    "D3_strong_dist": {
+      "PD+CfC": {
+        "peak_err_rad": 0.25703411810434396,
+        "mae_post_mrad": 68.89694003106563,
+        "recovery_time_s": 0.27199999999986124
+      },
+      "Full": {
+        "peak_err_rad": 0.2651419677624023,
+        "mae_post_mrad": 79.47238794508644,
+        "recovery_time_s": 0.04199999999988657
+      }
+    }
+  }
+}

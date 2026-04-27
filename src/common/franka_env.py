@@ -35,15 +35,55 @@ class FrankaEnv:
     step(tau) でトルクを直接指令する。
     重力・コリオリ力は MuJoCo が内部で計算するが、
     補償しない限り関節は重力で落下する点に注意。
+
+    Phase D オプション
+    ------------------
+    obs_noise_std       : 観測 q, dq に加えるガウスノイズ σ [rad, rad/s]
+    obs_delay_steps     : 観測を n ステップ遅延させる
+    torque_saturation   : アクチュエータトルクの上限 [Nm]。None = デフォルト TAU_LIMIT
+    model_mass_scale    : MuJoCo ボディ質量のスケール係数（1.0 = 変更なし）
+    model_friction_scale: MuJoCo 摩擦係数のスケール係数
     """
 
-    def __init__(self, model_path: str = MODEL_PATH):
+    def __init__(
+        self,
+        model_path: str = MODEL_PATH,
+        obs_noise_std: float = 0.0,
+        obs_delay_steps: int = 0,
+        torque_saturation: float | None = None,
+        model_mass_scale: float = 1.0,
+        model_friction_scale: float = 1.0,
+        rng: np.random.Generator | None = None,
+    ):
         self.model = mujoco.MjModel.from_xml_path(model_path)
         self.data  = mujoco.MjData(self.model)
         # 関節可動域 (7, 2)
         self.jnt_range = np.array(
             [self.model.jnt_range[i] for i in range(N_JOINTS)]
         )
+
+        # Phase D オプションの設定
+        self._obs_noise_std    = obs_noise_std
+        self._obs_delay_steps  = obs_delay_steps
+        self._tau_saturation   = (
+            np.full(N_JOINTS, torque_saturation)
+            if torque_saturation is not None else TAU_LIMIT.copy()
+        )
+        self._rng = rng if rng is not None else np.random.default_rng(0)
+
+        # 観測遅延バッファ（obs_delay_steps > 0 の場合のみ使用）
+        from collections import deque
+        self._obs_buf: deque = deque(maxlen=max(obs_delay_steps + 1, 1))
+        for _ in range(max(obs_delay_steps + 1, 1)):
+            self._obs_buf.append((np.zeros(N_JOINTS), np.zeros(N_JOINTS)))
+
+        # モデルパラメータスケール
+        if model_mass_scale != 1.0:
+            for i in range(self.model.nbody):
+                self.model.body_mass[i] *= model_mass_scale
+        if model_friction_scale != 1.0:
+            for i in range(self.model.ngeom):
+                self.model.geom_friction[i] *= model_friction_scale
 
     # ------------------------------------------------------------------
     # 基本 API
@@ -68,6 +108,10 @@ class FrankaEnv:
         if dq0 is not None:
             self.data.qvel[:N_JOINTS] = dq0
         mujoco.mj_forward(self.model, self.data)
+        # 遅延バッファをリセット
+        raw_q, raw_dq = self._raw_state()
+        for _ in range(len(self._obs_buf)):
+            self._obs_buf.append((raw_q.copy(), raw_dq.copy()))
         return self.get_state()
 
     def step(self, tau: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
@@ -80,17 +124,32 @@ class FrankaEnv:
 
         Returns
         -------
-        q, dq : 次ステップの関節角・速度
+        q, dq : 次ステップの関節角・速度（遅延・ノイズ込み）
         """
-        tau_clipped = np.clip(tau, -TAU_LIMIT, TAU_LIMIT)
+        tau_clipped = np.clip(tau, -self._tau_saturation, self._tau_saturation)
         self.data.ctrl[:N_JOINTS] = tau_clipped
         mujoco.mj_step(self.model, self.data)
+        # 遅延バッファ更新
+        raw_q, raw_dq = self._raw_state()
+        self._obs_buf.append((raw_q.copy(), raw_dq.copy()))
         return self.get_state()
 
+    def _raw_state(self) -> tuple[np.ndarray, np.ndarray]:
+        """ノイズ・遅延なしの生の関節角・速度を返す。"""
+        return (
+            self.data.qpos[:N_JOINTS].copy(),
+            self.data.qvel[:N_JOINTS].copy(),
+        )
+
     def get_state(self) -> tuple[np.ndarray, np.ndarray]:
-        """現在の関節角・速度 (q, dq) を返す。"""
-        q  = self.data.qpos[:N_JOINTS].copy()
-        dq = self.data.qvel[:N_JOINTS].copy()
+        """遅延・ノイズを適用した関節角・速度 (q, dq) を返す。"""
+        # 遅延: obs_delay_steps ステップ前の状態
+        q, dq = self._obs_buf[0]
+        q = q.copy(); dq = dq.copy()
+        # ノイズ
+        if self._obs_noise_std > 0.0:
+            q  += self._rng.normal(0.0, self._obs_noise_std, size=N_JOINTS)
+            dq += self._rng.normal(0.0, self._obs_noise_std, size=N_JOINTS)
         return q, dq
 
     def get_ee_pos(self) -> np.ndarray:

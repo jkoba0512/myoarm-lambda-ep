@@ -1,0 +1,28 @@
+{
+  "experiment": "2b",
+  "seed": 42,
+  "sweep_name": "condition_sweep_phase_d/D5_torque_sat",
+  "disturbance_time_s": 3.0,
+  "disturbance_joint": 1,
+  "q_init_noise": 0.0,
+  "pd_gain_scale": 1.0,
+  "obs_noise_std": 0.0,
+  "obs_delay_steps": 0,
+  "torque_saturation": 30.0,
+  "model_mass_scale": 1.0,
+  "model_friction_scale": 1.0,
+  "disturbance_levels": {
+    "D5_torque_sat": {
+      "PD+CfC": {
+        "peak_err_rad": 0.22320368059123913,
+        "mae_post_mrad": 112.277974743001,
+        "recovery_time_s": 0.04399999999988635
+      },
+      "Full": {
+        "peak_err_rad": 0.2359157797747536,
+        "mae_post_mrad": 113.1020234942783,
+        "recovery_time_s": 0.04399999999988635
+      }
+    }
+  }
+}

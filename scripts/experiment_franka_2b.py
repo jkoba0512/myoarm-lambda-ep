@@ -135,6 +135,19 @@ def parse_args() -> argparse.Namespace:
                    help="外乱を入れる関節インデックス")
     p.add_argument("--q-init-noise", type=float, default=0.0,
                    help="初期関節角ガウスノイズ標準偏差 [rad]")
+    # Phase D オプション
+    p.add_argument("--pd-gain-scale", type=float, default=1.0,
+                   help="PD ゲインのスケール係数 (1.0=通常, 0.5=低ゲイン条件 D1)")
+    p.add_argument("--obs-noise-std", type=float, default=0.0,
+                   help="観測ノイズ σ [rad, rad/s] (0=なし, D4 条件)")
+    p.add_argument("--obs-delay-steps", type=int, default=0,
+                   help="観測遅延ステップ数 (0=なし, D2 条件)")
+    p.add_argument("--torque-saturation", type=float, default=None,
+                   help="トルク飽和上限 [Nm] (None=TAU_LIMIT, D5 条件)")
+    p.add_argument("--model-mass-scale", type=float, default=1.0,
+                   help="モデル質量スケール (1.0=変更なし, D6 条件)")
+    p.add_argument("--model-friction-scale", type=float, default=1.0,
+                   help="モデル摩擦スケール (1.0=変更なし, D6 条件)")
     p.add_argument("--sweep-name", type=str, default="default",
                    help="default 以外では results/experiment_franka_2b/<sweep-name>/seed*/ に保存")
     return p.parse_args()
@@ -159,12 +172,25 @@ def main():
     if args.q_init_noise > 0.0:
         q_init = q_init + rng.normal(0.0, args.q_init_noise, size=q_init.shape)
 
-    env     = FrankaEnv()
+    env = FrankaEnv(
+        obs_noise_std=args.obs_noise_std,
+        obs_delay_steps=args.obs_delay_steps,
+        torque_saturation=args.torque_saturation,
+        model_mass_scale=args.model_mass_scale,
+        model_friction_scale=args.model_friction_scale,
+        rng=np.random.default_rng(seed + 1000),
+    )
     q_range = env.ctrl_range
+
+    from common.franka_neural_controller import _KP_DEFAULT, _KD_DEFAULT
+    kp_scaled = _KP_DEFAULT * args.pd_gain_scale
+    kd_scaled = _KD_DEFAULT * args.pd_gain_scale
 
     def make_ctrl(use_reflex: bool) -> FrankaNeuralController:
         ctrl = FrankaNeuralController(
             dt=env.dt, q_range=q_range,
+            kp=kp_scaled.copy(),
+            kd=kd_scaled.copy(),
             cpg_params=CPG_PARAMS,
             use_proprioceptor=False,
             use_reflex=use_reflex,
@@ -211,6 +237,12 @@ def main():
         "disturbance_time_s": args.disturbance_time,
         "disturbance_joint": args.disturbance_joint,
         "q_init_noise": args.q_init_noise,
+        "pd_gain_scale": args.pd_gain_scale,
+        "obs_noise_std": args.obs_noise_std,
+        "obs_delay_steps": args.obs_delay_steps,
+        "torque_saturation": args.torque_saturation,
+        "model_mass_scale": args.model_mass_scale,
+        "model_friction_scale": args.model_friction_scale,
         "disturbance_levels": {},
     }
     for dist_label, dlogs in results.items():
