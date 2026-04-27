@@ -18,6 +18,7 @@ results/**/*.npz
 
 # Per-seed condition sweep plots (regenerable; keep results/summary_figures/)
 results/experiment_franka_2*/**/*.png
+results/experiment_franka_e*/**/*.png
 
 # Tool-local state
 .codex
