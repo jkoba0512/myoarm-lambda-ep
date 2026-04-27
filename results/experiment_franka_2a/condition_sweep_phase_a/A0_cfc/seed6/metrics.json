@@ -1,0 +1,17 @@
+{
+  "experiment": "2a",
+  "seed": 6,
+  "compensator": "cfc",
+  "sweep_name": "condition_sweep_phase_a/A0_cfc",
+  "conditions": {
+    "PD": {
+      "static_mae_mrad": 158.41640843640147
+    },
+    "PD+CfC": {
+      "static_mae_mrad": 180.22203330181694
+    },
+    "Full": {
+      "static_mae_mrad": 166.89277055498786
+    }
+  }
+}

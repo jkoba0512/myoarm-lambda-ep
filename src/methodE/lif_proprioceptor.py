@@ -100,6 +100,9 @@ class LIFProprioceptor:
         self._buf_q  = np.zeros((window, n_joints), dtype=np.int8)
         self._buf_dq = np.zeros((window, n_joints), dtype=np.int8)
         self._buf_idx = 0
+        # 直前ステップの発火フラグ（位相解析用）
+        self._last_spiked_q  = np.zeros(n_joints, dtype=bool)
+        self._last_spiked_dq = np.zeros(n_joints, dtype=bool)
 
     # ------------------------------------------------------------------
     def reset(self) -> None:
@@ -111,6 +114,8 @@ class LIFProprioceptor:
         self._buf_q[:] = 0
         self._buf_dq[:] = 0
         self._buf_idx = 0
+        self._last_spiked_q[:]  = False
+        self._last_spiked_dq[:] = False
 
     # ------------------------------------------------------------------
     def encode(
@@ -139,6 +144,8 @@ class LIFProprioceptor:
         # --- LIF 1 ステップ ---
         spiked_q,  self.V_q,  self.ref_q  = self._lif_step(self.V_q,  self.ref_q,  I_q)
         spiked_dq, self.V_dq, self.ref_dq = self._lif_step(self.V_dq, self.ref_dq, I_dq)
+        self._last_spiked_q[:]  = spiked_q
+        self._last_spiked_dq[:] = spiked_dq
 
         # --- スパイク履歴更新 ---
         self._buf_q [self._buf_idx] = spiked_q.astype(np.int8)
@@ -191,6 +198,11 @@ class LIFProprioceptor:
         ref_new = np.where(spiked, self.t_ref, np.maximum(ref - self.dt, 0.0))
 
         return spiked, V_new, ref_new
+
+    @property
+    def last_spikes(self) -> np.ndarray:
+        """直前ステップの位置ニューロン発火フラグ (n_joints,) bool。位相解析用。"""
+        return self._last_spiked_q.copy()
 
     # ------------------------------------------------------------------
     def get_spike_raster(self) -> dict:

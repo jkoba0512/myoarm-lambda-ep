@@ -107,3 +107,8 @@ class MatsuokaOscillator:
     def state(self) -> np.ndarray:
         """現在の状態 [x1, x2] (2n,) を返す（CfC への入力に使う）。"""
         return np.concatenate([self.x1, self.x2])
+
+    @property
+    def phase(self) -> np.ndarray:
+        """各振動子の位相 (n,) [rad]。atan2(x1, x2) として定義。位相解析用。"""
+        return np.arctan2(self.x1, self.x2)

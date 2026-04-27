@@ -1,0 +1,27 @@
+{
+  "experiment": "2c",
+  "seed": 3,
+  "sweep_name": "condition_sweep_2c/tau_025_taur050",
+  "sim_duration_s": 9.0,
+  "load_time_s": 3.0,
+  "load_joint": 1,
+  "load_torque_nm": -25.0,
+  "endpoint_joint": 1,
+  "cpg_amplitude": 0.3,
+  "cpg_tau": 0.25,
+  "cpg_tau_r": 0.5,
+  "conditions": {
+    "CPG+CfC": {
+      "ep_err_pre_mrad": 180.39979360929817,
+      "ep_err_post_mrad": 229.26854260590588,
+      "mae_post_mrad": 123.03389757798409,
+      "recovery_time_s": 0.8319999999997996
+    },
+    "CPG+CfC+LIF_FB": {
+      "ep_err_pre_mrad": 118.73230838416917,
+      "ep_err_post_mrad": 236.92593755972413,
+      "mae_post_mrad": 118.58187269998399,
+      "recovery_time_s": 0.8259999999998002
+    }
+  }
+}

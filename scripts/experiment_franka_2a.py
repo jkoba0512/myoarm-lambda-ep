@@ -37,6 +37,7 @@ import torch as _torch
 
 from common.franka_env import FrankaEnv, N_JOINTS
 from common.franka_neural_controller import FrankaNeuralController
+from methodB.cfc_compensator import CfCGravityCompensator, MLPCompensator, LSTMCompensator
 
 RESULTS_DIR = ROOT / "results" / "experiment_franka_2a"
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -95,53 +96,86 @@ def run_episode(controller: FrankaNeuralController, env: FrankaEnv) -> dict:
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser()
     p.add_argument("--seed", type=int, default=42, help="乱数シード")
+    p.add_argument("--compensator", choices=["cfc", "mlp", "lstm"], default="cfc",
+                   help="補償器タイプ (Phase A0=cfc, A3=mlp/lstm)")
+    p.add_argument("--sweep-name", type=str, default="default",
+                   help="default 以外では results/experiment_franka_2a/<sweep-name>/seed*/ に保存")
     return p.parse_args()
 
 
 def main():
     args   = parse_args()
     seed   = args.seed
-    outdir = RESULTS_DIR / f"seed{seed}"
+    base_dir = RESULTS_DIR if args.sweep_name == "default" else RESULTS_DIR / args.sweep_name
+    outdir = base_dir / f"seed{seed}"
     outdir.mkdir(parents=True, exist_ok=True)
 
     # 再現性確保: モデル初期化・DataLoader shuffle を固定
     _torch.manual_seed(seed)
     np.random.seed(seed)
 
-    print(f"seed={seed}  out={outdir}")
+    print(f"seed={seed}  compensator={args.compensator}  out={outdir}")
 
     env     = FrankaEnv()
     q_range = env.ctrl_range
 
-    # ── 小脳 CfC を事前訓練 ───────────────────────────────────────
-    print("=== 小脳 CfC 訓練 ===")
-    ctrl_train = FrankaNeuralController(
-        dt=env.dt, q_range=q_range,
-        cpg_params=CPG_PARAMS,
-        use_proprioceptor=False,
-        use_reflex=False,
-        use_cerebellum=True,
-        cfc_hidden_units=64,
-        device=DEVICE,
-    )
-    loss_hist = ctrl_train.train_cerebellum(
-        env,
-        n_trajectories=N_TRAJECTORIES,
-        seq_len=SEQ_LEN,
-        n_epochs=N_EPOCHS,
-        verbose=(seed == 42),
-    )
-    cfc_path = str(outdir / "cfc_cerebellum.pt")
-    ctrl_train.save_cerebellum(cfc_path)
-    print(f"小脳モデル保存: {cfc_path}")
+    # ── 補償器の訓練 ──────────────────────────────────────────────
+    if args.compensator == "cfc":
+        compensator_cls_label = "CfC"
+        ctrl_train = FrankaNeuralController(
+            dt=env.dt, q_range=q_range,
+            cpg_params=CPG_PARAMS,
+            use_proprioceptor=False,
+            use_reflex=False,
+            use_cerebellum=True,
+            cfc_hidden_units=64,
+            device=DEVICE,
+        )
+        print(f"=== 小脳 CfC 訓練 ===")
+        loss_hist = ctrl_train.train_cerebellum(
+            env,
+            n_trajectories=N_TRAJECTORIES,
+            seq_len=SEQ_LEN,
+            n_epochs=N_EPOCHS,
+            verbose=(seed == 42),
+        )
+        cfc_path = str(outdir / "cfc_cerebellum.pt")
+        ctrl_train.save_cerebellum(cfc_path)
+        print(f"モデル保存: {cfc_path}")
+    else:
+        compensator_cls_label = args.compensator.upper()
+        CompCls = MLPCompensator if args.compensator == "mlp" else LSTMCompensator
+        compensator = CompCls(n_joints=N_JOINTS, hidden_units=64, device=DEVICE)
+        print(f"=== {compensator_cls_label} 補償器訓練 ===")
+        q_seqs, dq_seqs, tau_seqs = CfCGravityCompensator.collect_sequence_data(
+            env, n_trajectories=N_TRAJECTORIES, seq_len=SEQ_LEN,
+            rng=np.random.default_rng(seed),
+        )
+        loss_hist = compensator.fit(
+            q_seqs, dq_seqs, tau_seqs,
+            n_epochs=N_EPOCHS, verbose=(seed == 42), seed=seed,
+        )
+        cfc_path = str(outdir / "cfc_cerebellum.pt")
+        compensator.save(cfc_path)
+        print(f"モデル保存: {cfc_path}")
 
     # ── アブレーション評価 ────────────────────────────────────────
     # CPG オフのため固有受容器は CPG への FB パスが無効 → 除外
-    conditions = [
-        ("PD",    dict(use_proprioceptor=False, use_reflex=False, use_cerebellum=False)),
-        ("PD+CfC", dict(use_proprioceptor=False, use_reflex=False, use_cerebellum=True)),
-        ("Full",  dict(use_proprioceptor=False, use_reflex=True,  use_cerebellum=True)),
-    ]
+    if args.compensator == "cfc":
+        conditions = [
+            ("PD",    dict(use_proprioceptor=False, use_reflex=False, use_cerebellum=False)),
+            ("PD+CfC", dict(use_proprioceptor=False, use_reflex=False, use_cerebellum=True)),
+            ("Full",  dict(use_proprioceptor=False, use_reflex=True,  use_cerebellum=True)),
+        ]
+    else:
+        # MLP/LSTM は PD+compensator と Full の比較のみ
+        conditions = [
+            ("PD",          dict(use_proprioceptor=False, use_reflex=False, use_cerebellum=False)),
+            (f"PD+{compensator_cls_label}",
+                            dict(use_proprioceptor=False, use_reflex=False, use_cerebellum=True)),
+            (f"Full+{compensator_cls_label}",
+                            dict(use_proprioceptor=False, use_reflex=True,  use_cerebellum=True)),
+        ]
 
     results = {}
     print("\n=== アブレーション評価（静止保持） ===")
@@ -154,16 +188,23 @@ def main():
             **flags,
         )
         if flags["use_cerebellum"]:
-            ctrl.load_cerebellum(cfc_path)
+            if args.compensator == "cfc":
+                ctrl.load_cerebellum(cfc_path)
+            else:
+                # MLP/LSTM 補償器を直接差し替え
+                ctrl.cerebellum = compensator
+                ctrl.cerebellum.reset()
 
         log = run_episode(ctrl, env)
         results[label] = log
-        print(f"  {label:8s}  MAE: {log['mae']*1000:.2f} mrad")
+        print(f"  {label:12s}  MAE: {log['mae']*1000:.2f} mrad")
 
     # ── 標準化 JSON 保存 ──────────────────────────────────────────
     summary = {
         "experiment": "2a",
         "seed": seed,
+        "compensator": args.compensator,
+        "sweep_name": args.sweep_name,
         "conditions": {
             label: {"static_mae_mrad": float(results[label]["mae"] * 1000)}
             for label, _ in conditions

@@ -137,10 +137,12 @@ def aggregate_2c(records: list[dict[str, Any]]) -> dict[str, Any]:
         fb_post = []
         fb_mae = []
         fb_rt = []
+        _cpg_tau = recs[0].get("cpg_tau", 0.3)
         meta = {
             "load_torque_nm": recs[0]["load_torque_nm"],
             "cpg_amplitude": recs[0]["cpg_amplitude"],
-            "cpg_tau": recs[0].get("cpg_tau", 0.3),
+            "cpg_tau": _cpg_tau,
+            "cpg_tau_r": recs[0].get("cpg_tau_r", _cpg_tau * 2.0),
             "load_time_s": recs[0]["load_time_s"],
             "load_joint": recs[0]["load_joint"],
             "endpoint_joint": recs[0]["endpoint_joint"],

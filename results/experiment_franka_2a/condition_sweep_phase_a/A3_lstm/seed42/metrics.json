@@ -1,0 +1,17 @@
+{
+  "experiment": "2a",
+  "seed": 42,
+  "compensator": "lstm",
+  "sweep_name": "condition_sweep_phase_a/A3_lstm",
+  "conditions": {
+    "PD": {
+      "static_mae_mrad": 158.41640843640147
+    },
+    "PD+LSTM": {
+      "static_mae_mrad": 152.83402458656116
+    },
+    "Full+LSTM": {
+      "static_mae_mrad": 155.63487235234228
+    }
+  }
+}

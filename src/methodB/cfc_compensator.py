@@ -141,10 +141,19 @@ class CfCGravityCompensator:
         n_trajectories: int = 150,
         seq_len: int = 30,
         rng: np.random.Generator | None = None,
+        sine_fraction: float = 1.0,
+        hold_fraction: float = 0.0,
+        perturb_fraction: float = 0.0,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
-        ランダム正弦波軌道から時系列 (q, dq, τ_inv) を収集する。
-        mj_inverse に ddq を渡して動的補償トルクを取得する。
+        訓練データを収集する。sine/hold/perturbation の混合比を指定可能。
+        N_total = n_trajectories で固定し、混合比のみ変える（Phase C 用）。
+
+        Parameters
+        ----------
+        sine_fraction    : ランダム正弦波の比率（デフォルト 1.0 で従来動作）
+        hold_fraction    : 静止保持近傍サンプルの比率（dq ≈ 0 が中心）
+        perturb_fraction : 外乱後回復サンプルの比率
 
         Returns
         -------
@@ -153,14 +162,24 @@ class CfCGravityCompensator:
         if rng is None:
             rng = np.random.default_rng(42)
 
+        total = sine_fraction + hold_fraction + perturb_fraction
+        if abs(total - 1.0) > 1e-6:
+            raise ValueError(
+                f"sine_fraction + hold_fraction + perturb_fraction = {total} ≠ 1.0"
+            )
+
         dt = env.dt
-        n = env.ctrl_range.shape[0]  # active joints (env に合わせて自動取得)
-        jnt_range = env.ctrl_range   # (n, 2)
+        n = env.ctrl_range.shape[0]
+        jnt_range = env.ctrl_range
+
+        n_sine    = round(n_trajectories * sine_fraction)
+        n_hold    = round(n_trajectories * hold_fraction)
+        n_perturb = n_trajectories - n_sine - n_hold
 
         q_seqs, dq_seqs, tau_seqs = [], [], []
 
-        for _ in range(n_trajectories):
-            # ランダム軌道パラメータ
+        # ── sine サンプル（従来動作）─────────────────────────────
+        for _ in range(n_sine):
             A = rng.uniform(0.1, 0.5, n)
             f = rng.uniform(0.2, 1.5, n)
             phi = rng.uniform(0.0, 2 * np.pi, n)
@@ -170,22 +189,65 @@ class CfCGravityCompensator:
             q_seq, dq_seq, tau_seq = [], [], []
             for step in range(seq_len):
                 t = step * dt
-                q = q0 + A * np.sin(omega * t + phi)
-                dq = A * omega * np.cos(omega * t + phi)
+                q   = q0 + A * np.sin(omega * t + phi)
+                dq  = A * omega * np.cos(omega * t + phi)
                 ddq = -A * omega**2 * np.sin(omega * t + phi)
                 q = np.clip(q, jnt_range[:, 0], jnt_range[:, 1])
-
                 tau = env.inverse_dynamics(q, dq, ddq)
-                q_seq.append(q)
-                dq_seq.append(dq)
-                tau_seq.append(tau)
+                q_seq.append(q); dq_seq.append(dq); tau_seq.append(tau)
 
-            q_seqs.append(q_seq)
-            dq_seqs.append(dq_seq)
-            tau_seqs.append(tau_seq)
+            q_seqs.append(q_seq); dq_seqs.append(dq_seq); tau_seqs.append(tau_seq)
+
+        # ── hold サンプル（静止保持近傍: dq ≈ 0）────────────────
+        for _ in range(n_hold):
+            q0 = rng.uniform(jnt_range[:, 0] * 0.5, jnt_range[:, 1] * 0.5)
+            # 微小正弦波で dq が小さい状態を生成
+            A_small = rng.uniform(0.005, 0.02, n)
+            f_slow  = rng.uniform(0.05, 0.2, n)
+            phi     = rng.uniform(0.0, 2 * np.pi, n)
+            omega   = 2 * np.pi * f_slow
+
+            q_seq, dq_seq, tau_seq = [], [], []
+            for step in range(seq_len):
+                t   = step * dt
+                q   = q0 + A_small * np.sin(omega * t + phi)
+                dq  = A_small * omega * np.cos(omega * t + phi)
+                ddq = -A_small * omega**2 * np.sin(omega * t + phi)
+                q = np.clip(q, jnt_range[:, 0], jnt_range[:, 1])
+                tau = env.inverse_dynamics(q, dq, ddq)
+                q_seq.append(q); dq_seq.append(dq); tau_seq.append(tau)
+
+            q_seqs.append(q_seq); dq_seqs.append(dq_seq); tau_seqs.append(tau_seq)
+
+        # ── perturbation サンプル（外乱後回復区間）───────────────
+        for _ in range(n_perturb):
+            q0 = rng.uniform(jnt_range[:, 0] * 0.5, jnt_range[:, 1] * 0.5)
+            # 大振幅の高速減衰（外乱後のベクトル場を模倣）
+            A_init  = rng.uniform(0.1, 0.4, n)
+            decay   = rng.uniform(5.0, 20.0, n)      # 減衰係数 [1/s]
+            f_osc   = rng.uniform(0.5, 3.0, n)
+            phi     = rng.uniform(0.0, 2 * np.pi, n)
+            omega   = 2 * np.pi * f_osc
+
+            q_seq, dq_seq, tau_seq = [], [], []
+            for step in range(seq_len):
+                t      = step * dt
+                env_t  = np.exp(-decay * t)
+                q      = q0 + A_init * env_t * np.sin(omega * t + phi)
+                dq     = A_init * env_t * (omega * np.cos(omega * t + phi)
+                                           - decay * np.sin(omega * t + phi))
+                ddq    = A_init * env_t * (
+                    (-omega**2 + decay**2) * np.sin(omega * t + phi)
+                    - 2 * omega * decay   * np.cos(omega * t + phi)
+                )
+                q = np.clip(q, jnt_range[:, 0], jnt_range[:, 1])
+                tau = env.inverse_dynamics(q, dq, ddq)
+                q_seq.append(q); dq_seq.append(dq); tau_seq.append(tau)
+
+            q_seqs.append(q_seq); dq_seqs.append(dq_seq); tau_seqs.append(tau_seq)
 
         return (
-            np.array(q_seqs, dtype=np.float32),    # (N, T, 3)
+            np.array(q_seqs, dtype=np.float32),
             np.array(dq_seqs, dtype=np.float32),
             np.array(tau_seqs, dtype=np.float32),
         )
@@ -298,3 +360,186 @@ class CfCGravityCompensator:
         self._y_mean = np.array(ckpt["y_mean"])
         self._y_std  = np.array(ckpt["y_std"])
         print(f"Loaded CfC compensator ← {path}")
+
+
+class _BaseSeqCompensator:
+    """
+    MLP/LSTM 補償器の共通基底クラス。
+    CfCGravityCompensator と同一インタフェースを提供する（Phase A0/A3 比較用）。
+    """
+
+    def __init__(self, n_joints: int = 7, hidden_units: int = 64, device: str = "cpu"):
+        self.n_joints = n_joints
+        self.device = torch.device(device)
+        self._x_mean = np.zeros(n_joints * 2)
+        self._x_std  = np.ones(n_joints * 2)
+        self._y_mean = np.zeros(n_joints)
+        self._y_std  = np.ones(n_joints)
+        self.model: nn.Module  # サブクラスで定義
+        self.h: Any = None     # 隠れ状態（LSTM 用）
+
+    def reset(self) -> None:
+        self.h = None
+
+    def get_tau_sys(self) -> None:
+        return None
+
+    def predict(self, q: np.ndarray, dq: np.ndarray, dt: float = 0.004) -> np.ndarray:
+        x_raw = np.concatenate([q, dq])
+        x_norm = (x_raw - self._x_mean) / self._x_std
+        x = torch.tensor(x_norm, dtype=torch.float32, device=self.device)
+        x = x.unsqueeze(0).unsqueeze(0)  # (1, 1, in)
+
+        self.model.eval()
+        with torch.no_grad():
+            y_norm, self.h = self._forward(x)
+
+        y_np = y_norm.squeeze().cpu().numpy()
+        return y_np * self._y_std + self._y_mean
+
+    def _forward(self, x: torch.Tensor) -> tuple[torch.Tensor, Any]:
+        raise NotImplementedError
+
+    def fit(
+        self,
+        q_seqs: np.ndarray,
+        dq_seqs: np.ndarray,
+        tau_seqs: np.ndarray,
+        dt: float = 0.004,
+        n_epochs: int = 200,
+        batch_size: int = 32,
+        lr: float = 1e-3,
+        verbose: bool = True,
+        seed: int = 42,
+    ) -> list[float]:
+        N, T, _ = q_seqs.shape
+        X_raw = np.concatenate([q_seqs, dq_seqs], axis=-1)
+        Y_raw = tau_seqs
+
+        self._x_mean = X_raw.reshape(-1, self.n_joints * 2).mean(axis=0)
+        self._x_std  = X_raw.reshape(-1, self.n_joints * 2).std(axis=0) + 1e-8
+        self._y_mean = Y_raw.reshape(-1, self.n_joints).mean(axis=0)
+        self._y_std  = Y_raw.reshape(-1, self.n_joints).std(axis=0) + 1e-8
+
+        X = torch.tensor((X_raw - self._x_mean) / self._x_std, dtype=torch.float32)
+        Y = torch.tensor((Y_raw - self._y_mean) / self._y_std, dtype=torch.float32)
+
+        dataset = TensorDataset(X, Y)
+        _gen = torch.Generator().manual_seed(seed)
+        loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, generator=_gen)
+
+        optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer, T_max=n_epochs, eta_min=lr * 0.01
+        )
+        loss_fn = nn.MSELoss()
+        loss_history = []
+
+        self.model.train()
+        for epoch in range(1, n_epochs + 1):
+            epoch_loss = 0.0
+            for xb, yb in loader:
+                xb = xb.to(self.device)
+                yb = yb.to(self.device)
+                optimizer.zero_grad()
+                pred, _ = self._forward_batch(xb)
+                loss = loss_fn(pred, yb)
+                loss.backward()
+                nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
+                optimizer.step()
+                epoch_loss += loss.item() * len(xb)
+            scheduler.step()
+            epoch_loss /= N
+            loss_history.append(epoch_loss)
+            if verbose and epoch % 50 == 0:
+                print(f"  Epoch {epoch:4d}/{n_epochs}  loss={epoch_loss:.6f}")
+        return loss_history
+
+    def _forward_batch(self, x: torch.Tensor) -> tuple[torch.Tensor, Any]:
+        raise NotImplementedError
+
+    def save(self, path: str) -> None:
+        torch.save(
+            {
+                "model_state": self.model.state_dict(),
+                "x_mean": self._x_mean.tolist(),
+                "x_std":  self._x_std.tolist(),
+                "y_mean": self._y_mean.tolist(),
+                "y_std":  self._y_std.tolist(),
+            },
+            path,
+        )
+        print(f"Saved compensator → {path}")
+
+    def load(self, path: str) -> None:
+        ckpt = torch.load(path, map_location=self.device, weights_only=True)
+        self.model.load_state_dict(ckpt["model_state"])
+        self._x_mean = np.array(ckpt["x_mean"])
+        self._x_std  = np.array(ckpt["x_std"])
+        self._y_mean = np.array(ckpt["y_mean"])
+        self._y_std  = np.array(ckpt["y_std"])
+        print(f"Loaded compensator ← {path}")
+
+    # CfCGravityCompensator との互換性のため collect_sequence_data を委譲
+    @staticmethod
+    def collect_sequence_data(env, **kwargs):
+        return CfCGravityCompensator.collect_sequence_data(env, **kwargs)
+
+
+class MLPCompensator(_BaseSeqCompensator):
+    """
+    MLP 補償器（Phase A3 baseline 用）。
+    各タイムステップを独立に処理する（隠れ状態なし）。
+    CfCGravityCompensator と同一インタフェース。
+    """
+
+    def __init__(self, n_joints: int = 7, hidden_units: int = 64, device: str = "cpu"):
+        super().__init__(n_joints=n_joints, hidden_units=hidden_units, device=device)
+        in_size = n_joints * 2
+        self.model = nn.Sequential(
+            nn.Linear(in_size, hidden_units), nn.Tanh(),
+            nn.Linear(hidden_units, hidden_units), nn.Tanh(),
+            nn.Linear(hidden_units, n_joints),
+        ).to(self.device)
+
+    def _forward(self, x: torch.Tensor) -> tuple[torch.Tensor, None]:
+        # x: (1, 1, in)
+        out = self.model(x)  # (1, 1, out)
+        return out, None
+
+    def _forward_batch(self, x: torch.Tensor) -> tuple[torch.Tensor, None]:
+        # x: (N, T, in)
+        N, T, _ = x.shape
+        out = self.model(x.reshape(N * T, -1)).reshape(N, T, -1)
+        return out, None
+
+
+class LSTMCompensator(_BaseSeqCompensator):
+    """
+    LSTM 補償器（Phase A3 baseline 用）。
+    CfCGravityCompensator と同一インタフェース。
+    """
+
+    def __init__(self, n_joints: int = 7, hidden_units: int = 64, device: str = "cpu"):
+        super().__init__(n_joints=n_joints, hidden_units=hidden_units, device=device)
+        in_size = n_joints * 2
+        self._lstm = nn.LSTM(
+            input_size=in_size, hidden_size=hidden_units, batch_first=True
+        ).to(self.device)
+        self._head = nn.Linear(hidden_units, n_joints).to(self.device)
+        # nn.Module ラッパーで self.model としてアクセス可能にする
+        self.model = nn.ModuleList([self._lstm, self._head])
+
+    def _forward(self, x: torch.Tensor) -> tuple[torch.Tensor, tuple]:
+        # x: (1, 1, in); self.h: (h_n, c_n) or None
+        out, self.h = self._lstm(x, self.h)
+        return self._head(out), self.h
+
+    def _forward_batch(self, x: torch.Tensor) -> tuple[torch.Tensor, tuple]:
+        # x: (N, T, in)
+        out, h = self._lstm(x)
+        return self._head(out), h
+
+
+# 型ヒント用
+from typing import Any

@@ -1,0 +1,17 @@
+{
+  "experiment": "2a",
+  "seed": 5,
+  "compensator": "mlp",
+  "sweep_name": "condition_sweep_phase_a/A3_mlp",
+  "conditions": {
+    "PD": {
+      "static_mae_mrad": 158.41640843640147
+    },
+    "PD+MLP": {
+      "static_mae_mrad": 54.43310126085565
+    },
+    "Full+MLP": {
+      "static_mae_mrad": 54.40105807506821
+    }
+  }
+}

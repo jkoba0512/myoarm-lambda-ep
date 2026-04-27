@@ -80,11 +80,14 @@ def run_episode(
     load_t:       float,
     tau_load:     np.ndarray,
     endpoint_joint: int,
+    save_phase_log: bool = False,
 ) -> dict:
     q, dq = env.reset(q0=Q_OFFSET.copy())
     controller.reset()
 
     t_log, q_log, q_ref_log, r_q_log, tau_sys_log = [], [], [], [], []
+    # 位相ログ（--save-phase-log 時のみ収集）
+    cpg_output_log, cpg_phase_log, lif_fired_log, q_error_log = [], [], [], []
 
     while env.time < sim_duration:
         t = env.time
@@ -105,6 +108,12 @@ def run_episode(
         r_q_log.append(info["r_q"].copy())
         if info["tau_sys"] is not None:
             tau_sys_log.append(info["tau_sys"])
+
+        if save_phase_log:
+            cpg_output_log.append(info["q_cpg"].copy())
+            cpg_phase_log.append(controller.cpg.phase.copy())
+            lif_fired_log.append(controller.proprioceptor.last_spikes.copy())
+            q_error_log.append((info["q_target"] - q).copy())
 
     # セッション終了後に外力をリセット
     env.data.qfrc_applied[:N_JOINTS] = 0.0
@@ -139,7 +148,7 @@ def run_episode(
                 recovery_time = t_arr[pk] - load_t
                 break
 
-    return {
+    result = {
         "t":           t_arr,
         "q":           q_arr,
         "q_ref":       qref_arr,
@@ -152,6 +161,15 @@ def run_episode(
         "mae_post":    np.abs(q_arr - qref_arr)[post_mask].mean() if post_mask.any() else np.nan,
         "recovery_time": recovery_time,
     }
+    if save_phase_log and cpg_output_log:
+        result["phase_log"] = {
+            "cpg_output":  np.array(cpg_output_log).tolist(),
+            "cpg_phase":   np.array(cpg_phase_log).tolist(),
+            "lif_fired":   np.array(lif_fired_log, dtype=int).tolist(),
+            "q_error":     np.array(q_error_log).tolist(),
+            "t":           t_arr.tolist(),
+        }
+    return result
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -164,6 +182,10 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--load-torque", type=float, default=-25.0, help="持続負荷トルク [Nm]")
     p.add_argument("--cpg-amplitude", type=float, default=0.3, help="CPG 振幅 [rad]")
     p.add_argument("--cpg-tau", type=float, default=0.3, help="Matsuoka CPG tau (興奮性時定数) [s]。小さいほど高速振動")
+    p.add_argument("--cpg-tau-r", type=float, default=None,
+                   help="CPG tau_r を直接指定。省略時は cpg-tau * 2.0 を使用")
+    p.add_argument("--save-phase-log", action="store_true",
+                   help="CPG位相・LIF発火・q_error の時系列を phase_log.json に保存")
     p.add_argument("--endpoint-joint", type=int, default=1, help="評価対象関節インデックス")
     p.add_argument("--sweep-name", type=str, default="default",
                    help="default 以外では results/experiment_franka_2c/<sweep-name>/seed*/ に保存")
@@ -186,7 +208,8 @@ def main():
 
     env     = FrankaEnv()
     q_range = env.ctrl_range
-    cpg_params = dict(tau=args.cpg_tau, tau_r=args.cpg_tau * 2.0, beta=2.5, w=2.0, amplitude=args.cpg_amplitude)
+    tau_r = args.cpg_tau_r if args.cpg_tau_r is not None else args.cpg_tau * 2.0
+    cpg_params = dict(tau=args.cpg_tau, tau_r=tau_r, beta=2.5, w=2.0, amplitude=args.cpg_amplitude)
     tau_load = np.zeros(N_JOINTS)
     tau_load[args.load_joint] = args.load_torque
 
@@ -216,6 +239,7 @@ def main():
             load_t=args.load_time,
             tau_load=tau_load,
             endpoint_joint=args.endpoint_joint,
+            save_phase_log=args.save_phase_log,
         )
         results[label] = log
 
@@ -247,6 +271,7 @@ def main():
         "endpoint_joint": args.endpoint_joint,
         "cpg_amplitude": args.cpg_amplitude,
         "cpg_tau": args.cpg_tau,
+        "cpg_tau_r": tau_r,
         "conditions": {},
     }
     for label, log in results.items():
@@ -259,6 +284,22 @@ def main():
         }
     with open(outdir / "metrics.json", "w") as f:
         json.dump(summary, f, indent=2, ensure_ascii=False)
+
+    # ── 位相ログ保存 ──────────────────────────────────────────────
+    if args.save_phase_log:
+        phase_data: dict = {}
+        for label, log in results.items():
+            if "phase_log" in log:
+                phase_data[label] = log["phase_log"]
+        if phase_data:
+            phase_data["meta"] = {
+                "cpg_tau": args.cpg_tau,
+                "cpg_tau_r": tau_r,
+                "load_time_s": args.load_time,
+            }
+            with open(outdir / "phase_log.json", "w") as f:
+                json.dump(phase_data, f, ensure_ascii=False)
+            print(f"位相ログ保存: {outdir / 'phase_log.json'}")
 
     # ── 保存（npz） ───────────────────────────────────────────────
     np.savez(
