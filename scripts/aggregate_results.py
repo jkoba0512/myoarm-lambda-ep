@@ -127,9 +127,11 @@ def aggregate_2c(records: list[dict]) -> dict:
     result: dict[str, Any] = {}
 
     for cond in conditions:
+        ep_pre  = [r.get("conditions", {}).get(cond, {}).get("ep_err_pre_mrad")  for r in records]
         ep_post = [r.get("conditions", {}).get(cond, {}).get("ep_err_post_mrad") for r in records]
         mae_post = [r.get("conditions", {}).get(cond, {}).get("mae_post_mrad")    for r in records]
         result[cond] = {
+            "ep_err_pre_mrad":  stats(ep_pre),
             "ep_err_post_mrad": stats(ep_post),
             "mae_post_mrad":    stats(mae_post),
         }

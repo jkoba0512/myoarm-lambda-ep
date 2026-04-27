@@ -53,18 +53,8 @@ RESULTS_DIR = ROOT / "results" / "experiment_franka_2c"
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
 DEVICE       = "cuda" if _torch.cuda.is_available() else "cpu"
-SIM_DURATION = 9.0   # 3s 安定 + 6s 負荷応答を観察
-LOAD_T       = 3.0   # 持続負荷印加タイミング
 Q_OFFSET     = np.array([0.0, -0.3, 0.0, -1.5, 0.0, 1.5, 0.0])
 
-# CPG: J2 が ±0.3 rad を往復（2点間サイクリック動作）
-CPG_PARAMS = dict(tau=0.3, tau_r=0.6, beta=2.5, w=2.0, amplitude=0.3)
-
-# 持続負荷トルク: J2 に -25 Nm（重力方向 = アーム下方向）
-TAU_LOAD = np.zeros(N_JOINTS)
-TAU_LOAD[1] = -25.0
-
-ENDPOINT_JOINT = 1   # 評価対象関節（J2）
 RECOVERY_THR   = 1.2 # 回復判定: 負荷前エンドポイント誤差の 120% 以内
 
 JOINT_NAMES = ["J1", "J2", "J3", "J4", "J5", "J6", "J7"]
@@ -86,19 +76,23 @@ def detect_peaks(signal: np.ndarray, dt: float, min_interval: float = 0.2) -> np
 def run_episode(
     controller: FrankaNeuralController,
     env:        FrankaEnv,
+    sim_duration: float,
+    load_t:       float,
+    tau_load:     np.ndarray,
+    endpoint_joint: int,
 ) -> dict:
     q, dq = env.reset(q0=Q_OFFSET.copy())
     controller.reset()
 
     t_log, q_log, q_ref_log, r_q_log, tau_sys_log = [], [], [], [], []
 
-    while env.time < SIM_DURATION:
+    while env.time < sim_duration:
         t = env.time
         q, dq = env.get_state()
 
         # 持続負荷: LOAD_T 以降は毎ステップ外力を設定
-        if t >= LOAD_T:
-            env.data.qfrc_applied[:N_JOINTS] = TAU_LOAD
+        if t >= load_t:
+            env.data.qfrc_applied[:N_JOINTS] = tau_load
         else:
             env.data.qfrc_applied[:N_JOINTS] = 0.0
 
@@ -121,28 +115,28 @@ def run_episode(
     dt       = env.dt
 
     # エンドポイント到達誤差: 各サイクルのピーク/トラフで評価
-    ref_j2  = qref_arr[:, ENDPOINT_JOINT]
-    act_j2  = q_arr[:,   ENDPOINT_JOINT]
-    peaks   = detect_peaks(ref_j2, dt)
+    ref_joint = qref_arr[:, endpoint_joint]
+    act_joint = q_arr[:,   endpoint_joint]
+    peaks     = detect_peaks(ref_joint, dt)
 
-    pre_mask  = t_arr < LOAD_T
-    post_mask = t_arr >= LOAD_T
+    pre_mask  = t_arr < load_t
+    post_mask = t_arr >= load_t
 
-    ep_err_pre  = np.mean(np.abs(act_j2[peaks[t_arr[peaks] < LOAD_T]]
-                                  - ref_j2[peaks[t_arr[peaks] < LOAD_T]])) \
-                  if any(t_arr[peaks] < LOAD_T) else np.nan
-    ep_err_post = np.mean(np.abs(act_j2[peaks[t_arr[peaks] >= LOAD_T]]
-                                  - ref_j2[peaks[t_arr[peaks] >= LOAD_T]])) \
-                  if any(t_arr[peaks] >= LOAD_T) else np.nan
+    ep_err_pre  = np.mean(np.abs(act_joint[peaks[t_arr[peaks] < load_t]]
+                                  - ref_joint[peaks[t_arr[peaks] < load_t]])) \
+                  if any(t_arr[peaks] < load_t) else np.nan
+    ep_err_post = np.mean(np.abs(act_joint[peaks[t_arr[peaks] >= load_t]]
+                                  - ref_joint[peaks[t_arr[peaks] >= load_t]])) \
+                  if any(t_arr[peaks] >= load_t) else np.nan
 
     # 収束時間: エンドポイント誤差が負荷前レベルの RECOVERY_THR 倍以内に戻る時刻
     recovery_time = None
     if not np.isnan(ep_err_pre):
         thr = ep_err_pre * RECOVERY_THR
-        for pk in peaks[t_arr[peaks] >= LOAD_T]:
-            err = abs(act_j2[pk] - ref_j2[pk])
+        for pk in peaks[t_arr[peaks] >= load_t]:
+            err = abs(act_joint[pk] - ref_joint[pk])
             if err <= thr:
-                recovery_time = t_arr[pk] - LOAD_T
+                recovery_time = t_arr[pk] - load_t
                 break
 
     return {
@@ -164,13 +158,23 @@ def run_episode(
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser()
     p.add_argument("--seed", type=int, default=42, help="乱数シード")
+    p.add_argument("--sim-duration", type=float, default=9.0, help="シミュレーション時間 [s]")
+    p.add_argument("--load-time", type=float, default=3.0, help="持続負荷印加時刻 [s]")
+    p.add_argument("--load-joint", type=int, default=1, help="負荷をかける関節インデックス")
+    p.add_argument("--load-torque", type=float, default=-25.0, help="持続負荷トルク [Nm]")
+    p.add_argument("--cpg-amplitude", type=float, default=0.3, help="CPG 振幅 [rad]")
+    p.add_argument("--cpg-tau", type=float, default=0.3, help="Matsuoka CPG tau (興奮性時定数) [s]。小さいほど高速振動")
+    p.add_argument("--endpoint-joint", type=int, default=1, help="評価対象関節インデックス")
+    p.add_argument("--sweep-name", type=str, default="default",
+                   help="default 以外では results/experiment_franka_2c/<sweep-name>/seed*/ に保存")
     return p.parse_args()
 
 
 def main():
     args   = parse_args()
     seed   = args.seed
-    outdir = RESULTS_DIR / f"seed{seed}"
+    base_dir = RESULTS_DIR if args.sweep_name == "default" else RESULTS_DIR / args.sweep_name
+    outdir = base_dir / f"seed{seed}"
     outdir.mkdir(parents=True, exist_ok=True)
 
     cfc_path = ROOT / "results" / "experiment_franka_2a" / f"seed{seed}" / "cfc_cerebellum.pt"
@@ -182,6 +186,9 @@ def main():
 
     env     = FrankaEnv()
     q_range = env.ctrl_range
+    cpg_params = dict(tau=args.cpg_tau, tau_r=args.cpg_tau * 2.0, beta=2.5, w=2.0, amplitude=args.cpg_amplitude)
+    tau_load = np.zeros(N_JOINTS)
+    tau_load[args.load_joint] = args.load_torque
 
     conditions = [
         ("CPG+CfC",        dict(use_proprioceptor=False, cpg_alpha_fb=0.0)),
@@ -190,20 +197,26 @@ def main():
 
     results = {}
     print("=== 実験 2-C (Franka): 2点間サイクリック動作 + LIF 固有受容器 FB 評価 ===")
-    print(f"  タスク: J2 が ±{CPG_PARAMS['amplitude']} rad を往復（CPG 振動）")
-    print(f"  持続負荷: t={LOAD_T}s 以降 J2 に {TAU_LOAD[1]:.0f} Nm を印加")
+    print(f"  タスク: J{args.endpoint_joint + 1} が ±{cpg_params['amplitude']} rad を往復（CPG 振動）")
+    print(f"  持続負荷: t={args.load_time}s 以降 J{args.load_joint + 1} に {tau_load[args.load_joint]:.0f} Nm を印加")
 
     for label, flags in conditions:
         ctrl = FrankaNeuralController(
             dt=env.dt, q_range=q_range,
-            cpg_params=CPG_PARAMS,
+            cpg_params=cpg_params,
             use_reflex=False,
             use_cerebellum=True,
             device=DEVICE,
             **flags,
         )
         ctrl.load_cerebellum(str(cfc_path))
-        log = run_episode(ctrl, env)
+        log = run_episode(
+            ctrl, env,
+            sim_duration=args.sim_duration,
+            load_t=args.load_time,
+            tau_load=tau_load,
+            endpoint_joint=args.endpoint_joint,
+        )
         results[label] = log
 
         rt     = log["recovery_time"]
@@ -223,7 +236,19 @@ def main():
               f"({ep_no*1000:.2f} → {ep_fb*1000:.2f} mrad)")
 
     # ── 標準化 JSON 保存 ──────────────────────────────────────────
-    summary: dict = {"experiment": "2c", "seed": seed, "conditions": {}}
+    summary: dict = {
+        "experiment": "2c",
+        "seed": seed,
+        "sweep_name": args.sweep_name,
+        "sim_duration_s": args.sim_duration,
+        "load_time_s": args.load_time,
+        "load_joint": args.load_joint,
+        "load_torque_nm": args.load_torque,
+        "endpoint_joint": args.endpoint_joint,
+        "cpg_amplitude": args.cpg_amplitude,
+        "cpg_tau": args.cpg_tau,
+        "conditions": {},
+    }
     for label, log in results.items():
         rt = log["recovery_time"]
         summary["conditions"][label] = {
@@ -249,35 +274,35 @@ def main():
     fig, axes = plt.subplots(2, 2, figsize=(14, 9))
     fig.suptitle(f"Experiment 2-C (Franka Panda): 2-Point Cyclic Motion  [seed={seed}]\n"
                  "LIF Proprioceptor FB under sustained load "
-                 f"({TAU_LOAD[1]:.0f} Nm on J2 at t={LOAD_T}s)", fontsize=11)
+                 f"({tau_load[args.load_joint]:.0f} Nm on J{args.load_joint + 1} at t={args.load_time}s)", fontsize=11)
 
     def shade(ax):
-        ax.axvspan(0, LOAD_T, alpha=0.04, color="blue", label="pre-load")
-        ax.axvspan(LOAD_T, SIM_DURATION, alpha=0.04, color="red", label="post-load")
-        ax.axvline(LOAD_T, color="red", lw=1.5, ls="--", alpha=0.8)
+        ax.axvspan(0, args.load_time, alpha=0.04, color="blue", label="pre-load")
+        ax.axvspan(args.load_time, args.sim_duration, alpha=0.04, color="red", label="post-load")
+        ax.axvline(args.load_time, color="red", lw=1.5, ls="--", alpha=0.8)
 
     log_fb = results["CPG+CfC+LIF_FB"]
 
     ax = axes[0, 0]
-    ax.plot(log_fb["t"], log_fb["q_ref"][:, ENDPOINT_JOINT], "--",
+    ax.plot(log_fb["t"], log_fb["q_ref"][:, args.endpoint_joint], "--",
             color="black", alpha=0.5, lw=1.0, label="CPG ref")
     for label, log in results.items():
-        ax.plot(log["t"], log["q"][:, ENDPOINT_JOINT],
+        ax.plot(log["t"], log["q"][:, args.endpoint_joint],
                 label=label, color=colors[label], lw=1.2)
     shade(ax)
-    ax.set_ylabel("J2 angle [rad]")
-    ax.set_title("J2 joint tracking (cyclic motion)")
+    ax.set_ylabel(f"J{args.endpoint_joint + 1} angle [rad]")
+    ax.set_title(f"J{args.endpoint_joint + 1} joint tracking (cyclic motion)")
     ax.legend(fontsize=7)
     ax.grid(True, alpha=0.3)
     ax.set_xlabel("Time [s]")
 
     ax = axes[0, 1]
     for label, log in results.items():
-        err = np.abs(log["q"][:, ENDPOINT_JOINT] - log["q_ref"][:, ENDPOINT_JOINT])
+        err = np.abs(log["q"][:, args.endpoint_joint] - log["q_ref"][:, args.endpoint_joint])
         ax.plot(log["t"], err * 1000, label=label, color=colors[label], lw=1.0)
     shade(ax)
-    ax.set_ylabel("J2 tracking error [mrad]")
-    ax.set_title("J2 tracking error over time")
+    ax.set_ylabel(f"J{args.endpoint_joint + 1} tracking error [mrad]")
+    ax.set_title(f"J{args.endpoint_joint + 1} tracking error over time")
     ax.legend(fontsize=7)
     ax.grid(True, alpha=0.3)
     ax.set_xlabel("Time [s]")

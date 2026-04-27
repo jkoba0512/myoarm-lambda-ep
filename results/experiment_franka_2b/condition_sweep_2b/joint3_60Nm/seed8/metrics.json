@@ -1,0 +1,22 @@
+{
+  "experiment": "2b",
+  "seed": 8,
+  "sweep_name": "condition_sweep_2b/joint3_60Nm",
+  "disturbance_time_s": 3.0,
+  "disturbance_joint": 3,
+  "q_init_noise": 0.0,
+  "disturbance_levels": {
+    "joint3_60Nm": {
+      "PD+CfC": {
+        "peak_err_rad": 0.3124153356891983,
+        "mae_post_mrad": 129.04402934402282,
+        "recovery_time_s": 0.9299999999997888
+      },
+      "Full": {
+        "peak_err_rad": 0.29467043160985407,
+        "mae_post_mrad": 120.16953101626301,
+        "recovery_time_s": 0.04199999999988657
+      }
+    }
+  }
+}

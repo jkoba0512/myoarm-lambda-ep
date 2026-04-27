@@ -1,0 +1,122 @@
+{
+  "n_seeds": 11,
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    42
+  ],
+  "tasks": {
+    "static_holding": {
+      "metric": "static_mae_mrad",
+      "baseline": {
+        "condition": "PD",
+        "mean": 158.4164084364015,
+        "std": 2.9808940330728763e-14,
+        "median": 158.41640843640147,
+        "min": 158.41640843640147,
+        "max": 158.41640843640147,
+        "n": 11,
+        "n_valid": 11,
+        "fail_rate": 0.0
+      },
+      "PD+CfC": {
+        "mean": 114.419240137196,
+        "std": 30.302635253831788,
+        "median": 114.9075104921755,
+        "min": 63.34869083733616,
+        "max": 180.22203330181694,
+        "n": 11,
+        "n_valid": 11,
+        "fail_rate": 0.0,
+        "cohens_d_vs_PD": 2.0533327083122277
+      },
+      "Full": {
+        "mean": 111.70771972686902,
+        "std": 25.402395482112873,
+        "median": 118.13485782068595,
+        "min": 78.10486006251769,
+        "max": 166.89277055498786,
+        "n": 11,
+        "n_valid": 11,
+        "fail_rate": 0.0,
+        "cohens_d_vs_PD": 2.6003870816119425
+      },
+      "module_verdict": {
+        "CfC_cerebellum": "large effect (d>2)",
+        "izhikevich_reflex": "not evaluated in isolation",
+        "lif_proprioceptor_fb": "not applicable (CPG off)"
+      }
+    },
+    "disturbance_rejection_heavy": {
+      "metric": "peak_err_rad",
+      "PD+CfC": {
+        "mean": 0.5998557188607967,
+        "std": 0.29083741213335407,
+        "median": 0.5017660294621769,
+        "min": 0.31851976148006594,
+        "max": 1.105535619862444,
+        "n": 11,
+        "n_valid": 11,
+        "fail_rate": 0.0
+      },
+      "Full": {
+        "mean": 0.5624633094362025,
+        "std": 0.2840712348602552,
+        "median": 0.4653602962905711,
+        "min": 0.31310860265571455,
+        "max": 1.2453003165019143,
+        "n": 11,
+        "n_valid": 11,
+        "fail_rate": 0.0,
+        "cohens_d_vs_PDCfC": 0.1300722131437478
+      },
+      "module_verdict": {
+        "CfC_cerebellum": "already included in PD+CfC baseline",
+        "izhikevich_reflex": "small effect (d=0.13)",
+        "lif_proprioceptor_fb": "not applicable (CPG off)"
+      }
+    },
+    "cyclic_motion": {
+      "metric": "ep_err_post_mrad",
+      "CPG+CfC": {
+        "mean": 354.54553737621825,
+        "std": 87.5270021067894,
+        "median": 329.3429439339307,
+        "min": 214.29141593002382,
+        "max": 479.4296513580701,
+        "n": 11,
+        "n_valid": 11,
+        "fail_rate": 0.0
+      },
+      "CPG+CfC+LIF_FB": {
+        "mean": 331.73122300725714,
+        "std": 77.53914645461269,
+        "median": 338.47659857355103,
+        "min": 217.24908439726156,
+        "max": 444.99158583351175,
+        "n": 11,
+        "n_valid": 11,
+        "fail_rate": 0.0,
+        "cohens_d_vs_nofb": 0.2759216778691474
+      },
+      "module_verdict": {
+        "CfC_cerebellum": "already included in both conditions",
+        "izhikevich_reflex": "disabled in 2C",
+        "lif_proprioceptor_fb": "small effect (d=0.28)"
+      }
+    }
+  },
+  "overall_verdict": {
+    "CfC_cerebellum": "PRIMARY CONTRIBUTOR — large effect (d≈2.1–2.6) on static MAE",
+    "izhikevich_reflex": "MINOR CONTRIBUTOR — small effect (d≈0.13) on disturbance peak",
+    "lif_proprioceptor_fb": "MINOR CONTRIBUTOR — small effect (d≈0.28) on cyclic endpoint"
+  }
+}

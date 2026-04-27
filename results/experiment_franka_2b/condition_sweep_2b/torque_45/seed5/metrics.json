@@ -1,0 +1,21 @@
+{
+  "experiment": "2b",
+  "seed": 5,
+  "sweep_name": "condition_sweep_2b/torque_45",
+  "disturbance_time_s": 3.0,
+  "disturbance_joint": 1,
+  "disturbance_levels": {
+    "torque_45": {
+      "PD+CfC": {
+        "peak_err_rad": 0.3409143637479896,
+        "mae_post_mrad": 125.56336134434629,
+        "recovery_time_s": 0.10999999999987908
+      },
+      "Full": {
+        "peak_err_rad": 0.4038755393302453,
+        "mae_post_mrad": 125.2663559766719,
+        "recovery_time_s": 0.05399999999988525
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "experiment": "2b",
+  "seed": 8,
+  "sweep_name": "condition_sweep_2b/timing_late",
+  "disturbance_time_s": 4.0,
+  "disturbance_joint": 1,
+  "disturbance_levels": {
+    "timing_late": {
+      "PD+CfC": {
+        "peak_err_rad": 0.11123293580109839,
+        "mae_post_mrad": 119.98597662739611,
+        "recovery_time_s": 0.04199999999977688
+      },
+      "Full": {
+        "peak_err_rad": 0.24217659533550132,
+        "mae_post_mrad": 103.86374729905998,
+        "recovery_time_s": 0.04199999999977688
+      }
+    }
+  }
+}

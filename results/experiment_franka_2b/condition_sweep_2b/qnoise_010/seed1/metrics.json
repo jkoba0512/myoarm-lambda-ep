@@ -1,0 +1,22 @@
+{
+  "experiment": "2b",
+  "seed": 1,
+  "sweep_name": "condition_sweep_2b/qnoise_010",
+  "disturbance_time_s": 3.0,
+  "disturbance_joint": 1,
+  "q_init_noise": 0.1,
+  "disturbance_levels": {
+    "qnoise_010": {
+      "PD+CfC": {
+        "peak_err_rad": 0.7182478121567952,
+        "mae_post_mrad": 127.20348527218655,
+        "recovery_time_s": 0.04199999999988657
+      },
+      "Full": {
+        "peak_err_rad": 0.7022540723518325,
+        "mae_post_mrad": 129.55869544882933,
+        "recovery_time_s": 0.09599999999988063
+      }
+    }
+  }
+}

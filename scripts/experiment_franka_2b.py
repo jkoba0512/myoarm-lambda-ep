@@ -41,13 +41,11 @@ RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
 DEVICE       = "cuda" if _torch.cuda.is_available() else "cpu"
 SIM_DURATION = 6.0
-DIST_T       = 3.0
 Q_OFFSET     = np.array([0.0, -0.3, 0.0, -1.5, 0.0, 1.5, 0.0])
 
 # CPG オフ（静止保持タスク）
 CPG_PARAMS = dict(tau=0.3, tau_r=0.6, beta=2.5, w=2.0, amplitude=0.0)
 
-DIST_JOINT = 1  # J2（肩ピッチ）
 DISTURBANCE_LEVELS = {
     "light_30Nm":  (30.0, 10),
     "medium_60Nm": (60.0, 20),
@@ -63,8 +61,12 @@ def run_episode(
     env:         FrankaEnv,
     dist_torque: float,
     dist_steps:  int,
+    dist_t:      float,
+    dist_joint:  int,
+    q_init:      np.ndarray | None = None,
 ) -> dict:
-    q, dq = env.reset(q0=Q_OFFSET.copy())
+    q0 = (q_init if q_init is not None else Q_OFFSET).copy()
+    q, dq = env.reset(q0=q0)
     controller.reset()
 
     t_log, q_log, tau_sys_log, reflex_log = [], [], [], []
@@ -74,9 +76,9 @@ def run_episode(
         t = env.time
         q, dq = env.get_state()
 
-        if not dist_applied and t >= DIST_T:
+        if not dist_applied and t >= dist_t:
             tau_dist = np.zeros(N_JOINTS)
-            tau_dist[DIST_JOINT] = dist_torque
+            tau_dist[dist_joint] = dist_torque
             env.apply_disturbance(tau_dist, duration_steps=dist_steps)
             dist_applied = True
             continue
@@ -93,15 +95,15 @@ def run_episode(
     t_arr    = np.array(t_log)
     q_arr    = np.array(q_log)
     err_arr  = np.abs(q_arr - Q_OFFSET)
-    post_mask = t_arr > DIST_T
+    post_mask = t_arr > dist_t
 
     recovery_time = None
     if post_mask.any():
-        post_err = err_arr[post_mask, DIST_JOINT]
+        post_err = err_arr[post_mask, dist_joint]
         post_t   = t_arr[post_mask]
         rec_idx  = np.where(post_err < 0.1)[0]
         if len(rec_idx):
-            recovery_time = post_t[rec_idx[0]] - DIST_T
+            recovery_time = post_t[rec_idx[0]] - dist_t
 
     return {
         "t":             t_arr,
@@ -109,7 +111,7 @@ def run_episode(
         "err":           err_arr,
         "tau_sys":       np.array(tau_sys_log) if tau_sys_log else None,
         "reflex":        np.array(reflex_log),
-        "peak_err":      err_arr[post_mask, DIST_JOINT].max() if post_mask.any() else np.nan,
+        "peak_err":      err_arr[post_mask, dist_joint].max() if post_mask.any() else np.nan,
         "mae_post":      err_arr[post_mask].mean() if post_mask.any() else np.nan,
         "recovery_time": recovery_time,
     }
@@ -119,13 +121,30 @@ def run_episode(
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser()
     p.add_argument("--seed", type=int, default=42, help="乱数シード")
+    p.add_argument("--disturbance-set", choices=["default", "custom"], default="default",
+                   help="default は light/medium/heavy を実行。custom は単一条件だけ実行。")
+    p.add_argument("--disturbance-name", type=str, default="custom",
+                   help="custom 条件名")
+    p.add_argument("--disturbance-torque", type=float, default=60.0,
+                   help="custom 外乱トルク [Nm]")
+    p.add_argument("--disturbance-steps", type=int, default=20,
+                   help="custom 外乱印加ステップ数")
+    p.add_argument("--disturbance-time", type=float, default=3.0,
+                   help="外乱印加時刻 [s]")
+    p.add_argument("--disturbance-joint", type=int, default=1,
+                   help="外乱を入れる関節インデックス")
+    p.add_argument("--q-init-noise", type=float, default=0.0,
+                   help="初期関節角ガウスノイズ標準偏差 [rad]")
+    p.add_argument("--sweep-name", type=str, default="default",
+                   help="default 以外では results/experiment_franka_2b/<sweep-name>/seed*/ に保存")
     return p.parse_args()
 
 
 def main():
     args   = parse_args()
     seed   = args.seed
-    outdir = RESULTS_DIR / f"seed{seed}"
+    base_dir = RESULTS_DIR if args.sweep_name == "default" else RESULTS_DIR / args.sweep_name
+    outdir = base_dir / f"seed{seed}"
     outdir.mkdir(parents=True, exist_ok=True)
 
     cfc_path = ROOT / "results" / "experiment_franka_2a" / f"seed{seed}" / "cfc_cerebellum.pt"
@@ -134,6 +153,11 @@ def main():
         return
 
     print(f"seed={seed}  out={outdir}")
+
+    rng = np.random.default_rng(seed)
+    q_init = Q_OFFSET.copy()
+    if args.q_init_noise > 0.0:
+        q_init = q_init + rng.normal(0.0, args.q_init_noise, size=q_init.shape)
 
     env     = FrankaEnv()
     q_range = env.ctrl_range
@@ -153,15 +177,26 @@ def main():
 
     conditions = [("PD+CfC", False), ("Full", True)]
     results    = {}
+    if args.disturbance_set == "default":
+        disturbance_levels = DISTURBANCE_LEVELS
+    else:
+        disturbance_levels = {
+            args.disturbance_name: (args.disturbance_torque, args.disturbance_steps)
+        }
     print("=== 実験 2-B (Franka): 外乱耐性評価（静止保持） ===")
 
-    for dist_label, (dist_torque, dist_steps) in DISTURBANCE_LEVELS.items():
+    for dist_label, (dist_torque, dist_steps) in disturbance_levels.items():
         print(f"\n  外乱強度: {dist_label}")
         results[dist_label] = {}
 
         for label, use_reflex in conditions:
             ctrl = make_ctrl(use_reflex)
-            log  = run_episode(ctrl, env, dist_torque, dist_steps)
+            log  = run_episode(
+                ctrl, env, dist_torque, dist_steps,
+                dist_t=args.disturbance_time,
+                dist_joint=args.disturbance_joint,
+                q_init=q_init,
+            )
             results[dist_label][label] = log
             rt     = log["recovery_time"]
             rt_str = f"{rt:.3f} s" if rt else "未回復"
@@ -169,7 +204,15 @@ def main():
                   f"外乱後MAE: {log['mae_post']:.4f} rad  回復時間: {rt_str}")
 
     # ── 標準化 JSON 保存 ──────────────────────────────────────────
-    summary: dict = {"experiment": "2b", "seed": seed, "disturbance_levels": {}}
+    summary: dict = {
+        "experiment": "2b",
+        "seed": seed,
+        "sweep_name": args.sweep_name,
+        "disturbance_time_s": args.disturbance_time,
+        "disturbance_joint": args.disturbance_joint,
+        "q_init_noise": args.q_init_noise,
+        "disturbance_levels": {},
+    }
     for dist_label, dlogs in results.items():
         summary["disturbance_levels"][dist_label] = {}
         for label, log in dlogs.items():
@@ -193,20 +236,22 @@ def main():
 
     # ── プロット ──────────────────────────────────────────────────
     colors    = {"PD+CfC": "tab:orange", "Full": "tab:green"}
-    n_levels  = len(DISTURBANCE_LEVELS)
+    n_levels  = len(disturbance_levels)
     fig, axes = plt.subplots(n_levels, 2, figsize=(12, 4 * n_levels))
+    if n_levels == 1:
+        axes = np.array([axes])
     fig.suptitle(f"Experiment 2-B (Franka Panda): Disturbance Rejection  [seed={seed}]\n"
                  "Static holding — PD+CfC vs Full (with Izhikevich Reflex Arc)", fontsize=11)
 
-    for row, (dist_label, _) in enumerate(DISTURBANCE_LEVELS.items()):
+    for row, (dist_label, _) in enumerate(disturbance_levels.items()):
         ax = axes[row, 0]
         for label, log in results[dist_label].items():
-            ax.plot(log["t"], log["err"][:, DIST_JOINT],
+            ax.plot(log["t"], log["err"][:, args.disturbance_joint],
                     label=label, color=colors[label])
-        ax.axvspan(DIST_T, SIM_DURATION, alpha=0.06, color="red")
-        ax.axvline(DIST_T, color="red", lw=1.5, ls="--", alpha=0.8)
-        ax.set_ylabel("J2 joint error [rad]")
-        ax.set_title(f"{dist_label}: J2 error")
+        ax.axvspan(args.disturbance_time, SIM_DURATION, alpha=0.06, color="red")
+        ax.axvline(args.disturbance_time, color="red", lw=1.5, ls="--", alpha=0.8)
+        ax.set_ylabel(f"J{args.disturbance_joint + 1} joint error [rad]")
+        ax.set_title(f"{dist_label}: J{args.disturbance_joint + 1} error")
         ax.legend(fontsize=8)
         ax.grid(True, alpha=0.3)
         ax.set_xlabel("Time [s]")

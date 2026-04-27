@@ -12,5 +12,12 @@ wheels/
 # Claude Code local settings
 .claude/
 
-# Large binary results (model weights)
+# Large binary results (model weights, raw arrays)
 results/**/*.pt
+results/**/*.npz
+
+# Per-seed condition sweep plots (regenerable; keep results/summary_figures/)
+results/experiment_franka_2*/**/*.png
+
+# Tool-local state
+.codex
