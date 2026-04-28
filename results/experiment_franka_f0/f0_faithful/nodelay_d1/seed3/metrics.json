@@ -1,0 +1,20 @@
+{
+  "MAE_pre": 188.4593,
+  "MAE_post": 309.1655,
+  "peak_err_rad": 1.962414,
+  "recovery_time_s": null,
+  "overshoot_ratio": 2.5402,
+  "oscillation_freq": 0.6757,
+  "energy_J": 7447.5069,
+  "energy_post_J": 3889.909,
+  "jerk_rms": 1145715.552584,
+  "io_fire_count": 3,
+  "io_fire_rate_hz": 0.5032,
+  "io_fire_interval_mean": 409.5,
+  "condition": "f0_faithful_nodelay_d1",
+  "controller": "f0_faithful_nodelay",
+  "prop_delay_steps": 0,
+  "cereb_delay_steps": 0,
+  "io_mode": "sparse",
+  "seed": 3
+}

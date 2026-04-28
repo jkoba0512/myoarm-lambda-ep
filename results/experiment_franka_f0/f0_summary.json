@@ -1,0 +1,79 @@
+{
+  "experiment": "f0",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "description": "F0-abstract (EF-full) vs F0-faithful (AnatomicalController) 比較",
+  "finding": {
+    "implementation_check": {
+      "nodelay_vs_faithful_pct": {
+        "D0": 1.37,
+        "D1": 1.82,
+        "D5": 1.53
+      },
+      "conclusion": "PASS: 実装は正常 (差 1-2%)"
+    },
+    "architecture_diff": {
+      "abstract_vs_nodelay_pct": {
+        "D0": 59.07,
+        "D1": 68.46,
+        "D5": 8.52
+      },
+      "mechanism": "EF-full は K_cereb*(q_target-q_hat) (目標追従補正)、F0-faithful は K_cereb*(delta_actual-delta_hat) (予測誤差補正) を使用",
+      "conclusion": "EF-full の小脳補正は事実上の追加 PD 制御器として機能しており、純粋な前向きモデル補正ではない"
+    }
+  },
+  "results": {
+    "D0": {
+      "f0_abstract": {
+        "mean": 133.093,
+        "std": 0.129
+      },
+      "f0_faithful_nodelay": {
+        "mean": 211.709,
+        "std": 0.087
+      },
+      "f0_faithful": {
+        "mean": 214.615,
+        "std": 0.553
+      }
+    },
+    "D1": {
+      "f0_abstract": {
+        "mean": 183.483,
+        "std": 0.094
+      },
+      "f0_faithful_nodelay": {
+        "mean": 309.089,
+        "std": 0.045
+      },
+      "f0_faithful": {
+        "mean": 303.463,
+        "std": 0.098
+      }
+    },
+    "D5": {
+      "f0_abstract": {
+        "mean": 288.124,
+        "std": 1.472
+      },
+      "f0_faithful_nodelay": {
+        "mean": 312.662,
+        "std": 0.18
+      },
+      "f0_faithful": {
+        "mean": 317.431,
+        "std": 6.952
+      }
+    }
+  }
+}
