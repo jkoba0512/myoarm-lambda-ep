@@ -180,14 +180,16 @@ class CfCForwardModel:
 
         return q + self._last_delta_hat  # q̂(t+1)
 
-    def update(self, q_actual: np.ndarray) -> None:
+    def update(self, q_actual: np.ndarray,
+               allow_online_update: bool = True) -> None:
         """
         実際の次状態 q_actual を受け取り、補正トルクを更新する。
         env.step() の直後に呼ぶこと。
 
         Parameters
         ----------
-        q_actual : env.step() 後の実際の関節角 q(t+1) [rad]
+        q_actual            : env.step() 後の実際の関節角 q(t+1) [rad]
+        allow_online_update : False にするとオンライン学習をスキップ（IO 発火ゲート用）
         """
         if self._last_q is None or self._last_delta_hat is None:
             return
@@ -197,7 +199,8 @@ class CfCForwardModel:
         self._pred_error[:] = error
         self._correction[:] = self.K_cereb * error
 
-        if self._online_opt is not None and self._last_x_norm is not None:
+        if allow_online_update and \
+                self._online_opt is not None and self._last_x_norm is not None:
             self._step_count += 1
             if self._step_count % self.online_interval == 0:
                 self._online_update(delta_actual)

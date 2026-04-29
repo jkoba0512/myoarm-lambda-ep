@@ -89,13 +89,15 @@ class CerebellarSideLoop:
         tau_cereb_delayed : cereb_delay_buf を通過した補正トルク (n_joints,) [Nm]
                             AnatomicalController が次ステップの M1 に渡す。
         """
-        # 予測誤差と補正トルクを更新
-        self.cfc.update(q_actual)
+        # IO 発火判定（前ステップの予測誤差で判定）
+        # continuous モード: 常に発火 → 毎ステップ学習
+        # sparse/error_gated モード: 確率的/閾値発火 → 発火時のみ学習（H4 の肝）
+        self._last_fired = self.io.should_fire(self._pred_error)
+
+        # 予測誤差と補正トルクを更新（IO 発火がゲートするのはオンライン学習のみ）
+        self.cfc.update(q_actual, allow_online_update=self._last_fired)
         self._pred_error = self.cfc.get_prediction_error().copy()
         self._tau_raw    = self.cfc.get_correction().copy()
-
-        # IO 発火判定（F4 実験用：sparse モードでは発火しないと学習しない）
-        self._last_fired = self.io.should_fire(self._pred_error)
 
         # 補正トルクを小脳ループ遅延バッファに通す
         return self.cereb_delay_buf.push_and_get(self._tau_raw)

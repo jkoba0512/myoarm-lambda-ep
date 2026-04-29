@@ -125,6 +125,7 @@ def run_faithful_blocks(ctrl, env, seed) -> dict:
 
 
 def make_ctrl(io_mode, io_firing_rate_hz, env_seed, cfc_path, ctrl_seed):
+    import torch as _torch_inner
     env = FrankaEnv(rng=np.random.default_rng(env_seed), obs_noise_std=0.002)
     cfg = AnatomicalConfig(
         prop_delay_steps=PROP_DELAY_FIXED,
@@ -140,9 +141,11 @@ def make_ctrl(io_mode, io_firing_rate_hz, env_seed, cfc_path, ctrl_seed):
     )
     ctrl = AnatomicalController(cfg, seed=ctrl_seed)
     if cfc_path:
-        # オンライン学習を有効化してから CfC をロード
-        ctrl._cerebellum.cfc.online_lr = ONLINE_LR
         ctrl.load_cfc(cfc_path)
+    # CfCForwardModel の optimizer を後から初期化（__init__ 時は online_lr=0 のため）
+    cfc = ctrl._cerebellum.cfc
+    cfc.online_lr = ONLINE_LR
+    cfc._online_opt = _torch_inner.optim.Adam(cfc.model.parameters(), lr=ONLINE_LR)
     return ctrl, env
 
 
