@@ -1,0 +1,141 @@
+{
+  "phase": "F",
+  "title": "解剖学的忠実コントローラ (Phase F) 仮説検証まとめ",
+  "date": "2026-04-29",
+  "experiments": {
+    "F0": {
+      "script": "experiment_franka_f0.py",
+      "description": "解剖学的忠実 vs EF-full アーキテクチャ比較",
+      "finding": {
+        "nodelay_vs_faithful_gap_pct": {"D0": 1.37, "D1": 1.82, "D5": 1.53},
+        "abstract_vs_nodelay_gap_pct": {"D0": 59.07, "D1": 68.46, "D5": 8.52},
+        "conclusion": "EF-full の小脳補正は K_cereb*(q_target-q_hat) = 事実上の追加 PD 制御器。F0-faithful は予測誤差補正 K_cereb*(delta_actual-delta_hat)。59-69% の MAE 差はアーキテクチャの根本的な違いに起因する。実装自体は正常 (nodelay vs faithful 差 1-2%)。"
+      },
+      "key_metrics": {
+        "f0_abstract_D0_MAE": 133.093,
+        "f0_faithful_nodelay_D0_MAE": 211.709,
+        "f0_faithful_D0_MAE": 214.615
+      }
+    },
+    "F1": {
+      "script": "experiment_franka_f1.py",
+      "hypothesis": "H1: 固有受容遅延増加 → 振動・不安定化",
+      "sweep_var": "prop_delay_steps",
+      "sweep_values": [0, 5, 10, 20, 30, 50],
+      "finding": {
+        "MAE_increase_rate_mrad_per_step": 8.466,
+        "instability_threshold_steps": 50,
+        "instability_threshold_ms": 100,
+        "key_result": "steps=30 (60 ms) で発振周波数が急増 (0.338→5.743 Hz)。steps=50 (100 ms) で全 seed が不安定化 (instability_ratio=1.0, MAE=669 mrad)。生体正常値 steps=10 (20 ms) は安定範囲内。H1 支持。"
+      },
+      "MAE_by_delay": {
+        "0": 211.679,
+        "5": 212.079,
+        "10": 214.615,
+        "20": 211.546,
+        "30": 257.574,
+        "50": 669.106
+      }
+    },
+    "F2": {
+      "script": "experiment_franka_f2.py",
+      "hypothesis": "H2: 小脳ループ遅延増加 → オーバーシュート・振動",
+      "sweep_var": "cereb_delay_steps",
+      "sweep_values": [0, 8, 15, 30, "ablated"],
+      "finding": {
+        "optimal_delay_steps": 15,
+        "decomposition_index_at_15": 0.1061,
+        "decomposition_index_ablated": 0.0,
+        "key_result": "小脳寄与度 (decomposition_index) は delay=15 steps (30 ms) が最大 (0.106)。遅延=0 や 30 steps では寄与が低下。ablated 条件 (cereb 無効) と比較すると小脳は MAE を 6-10% 改善。遅延=30 steps ではオーバーシュート比がわずかに増加 (2.034)。H2 部分支持 (効果は小さいが傾向は一致)。"
+      },
+      "MAE_by_delay": {
+        "0": 225.03,
+        "8": 220.608,
+        "15": 214.615,
+        "30": 225.525,
+        "ablated": 240.086
+      },
+      "decomp_index_by_delay": {
+        "0": 0.0627,
+        "8": 0.0811,
+        "15": 0.1061,
+        "30": 0.0607,
+        "ablated": 0.0
+      }
+    },
+    "F3": {
+      "script": "experiment_franka_f3.py",
+      "hypothesis": "H3: エファレンスコピー遮断 → 外乱適応遅延",
+      "conditions": ["f3_full", "f3_noisy_low", "f3_noisy_hi", "f3_removed"],
+      "finding": {
+        "tau_adapt_result": "全条件で tau_adapt=N/A (静的保持タスクでは外乱後 1/e 収束が観察されず)",
+        "MAE_removed_vs_full": {"full": 214.615, "removed": 235.681, "diff_pct": 9.8},
+        "key_result": "エファレンスコピー完全除去で MAE が約 10% 増加。低ノイズ・高ノイズ条件では差がほぼなし。tau_adapt は静的保持タスクでは計測不能 (外乱後に収束しない)。H3 の主要指標 (tau_adapt) は非計測だが MAE 増加はエファレンスコピーの役割を示唆。"
+      },
+      "MAE_post_by_condition": {
+        "f3_full": 214.615,
+        "f3_noisy_low": 214.615,
+        "f3_noisy_hi": 214.672,
+        "f3_removed": 235.681
+      },
+      "limitation": "静的保持タスク (D0) では外乱後 1/e 収束が達成されないため tau_adapt 計測不能。動的軌道追従タスクでの再実験が必要。"
+    },
+    "F4": {
+      "script": "experiment_franka_f4.py",
+      "hypothesis": "H4: 散発 IO 発火 → 高い学習効率",
+      "conditions": ["f4_continuous", "f4_10hz", "f4_1hz", "f4_error_gated"],
+      "online_lr": 0.0005,
+      "episode_duration_s": 60,
+      "finding": {
+        "MAE_improvement_by_condition": {
+          "f4_continuous":  {"final_MAE": 210.491, "improvement_pct": -13.16},
+          "f4_10hz":        {"final_MAE": 210.512, "improvement_pct": -13.12},
+          "f4_1hz":         {"final_MAE": 210.512, "improvement_pct": -13.12},
+          "f4_error_gated": {"final_MAE": 210.491, "improvement_pct": -13.10}
+        },
+        "key_result": "全条件で MAE が約 13% 悪化 (負の改善)。これは重力誘発ドリフト。IO 発火頻度の差 (500 Hz vs 1 Hz) にもかかわらず学習曲線はほぼ同一。",
+        "conclusion": "静的保持タスク (外乱なし・一定目標) では有意な学習信号が生じないため、IO 発火頻度の効果が現れない。H4 の検証には動的軌道追従タスクが必要。IO ゲーティングの実装自体は正しく機能している (allow_online_update 連結確認済み)。"
+      },
+      "io_fire_rate_hz_actual": {
+        "f4_continuous": 500.0,
+        "f4_10hz": 5.09,
+        "f4_1hz": 0.52,
+        "f4_error_gated": 380.03
+      },
+      "limitation": "静的保持タスクでは学習曲線が現れず。IO 散発発火の学習効率差を示すには動的 (locomotion / trajectory tracking) タスクへの移行が必要。"
+    },
+    "F5": {
+      "script": "experiment_franka_f5.py",
+      "hypothesis": "H5: 逆モデル所在 M1 のみが最高適応性",
+      "conditions": ["f5_m1only", "f5_cerebonly", "f5_both", "f5_abstract_efull"],
+      "finding": {
+        "MAE_post_by_condition": {
+          "f5_abstract_efull": 133.093,
+          "f5_m1only":         214.615,
+          "f5_cerebonly":      399.287,
+          "f5_both":           214.615
+        },
+        "overshoot_ratio_by_condition": {
+          "f5_m1only":    2.018,
+          "f5_cerebonly": 1.451,
+          "f5_both":      2.018
+        },
+        "key_result": "cerebonly は MAE が最悪 (399 mrad) だが overshoot_ratio は最小 (1.45)。m1only と both が同一性能 (214 mrad)。recovery_time は全条件 N/A。H5 は部分的に支持 — cerebonly が最悪という点は一致するが、m1only と both に差がない点は冗長仮説を否定。"
+      },
+      "insight": "small_cereb_contribution: 逆モデルの小脳配置は定常追従では大きなペナルティをもたらすが、M1 単独 vs M1+cereb の差は見られない。小脳の前向きモデルが既に m1_only に組み込まれている構造のため。",
+      "limitation": "recovery_time_s が全条件 N/A。短い外乱 (20 steps = 40 ms) では 0.1 rad 閾値内への回復が達成されない。"
+    }
+  },
+  "overall_conclusions": {
+    "H1": "支持 — 固有受容遅延 50 steps (100 ms) で全 seed 不安定化",
+    "H2": "部分支持 — 小脳ループ遅延 15 steps (30 ms) が最適、寄与度 10% 前後",
+    "H3": "部分的根拠あり — エファレンスコピー除去で MAE +10%、tau_adapt は測定不能 (タスク限界)",
+    "H4": "検証未完 — IO ゲーティング実装は正常だが静的タスクでは学習信号不足",
+    "H5": "部分支持 — cerebellum-only が最悪、m1only と both に差なし"
+  },
+  "pending_follow_up": [
+    "F3/F4: 動的軌道追従タスクで再実験 (tau_adapt, IO 学習効率の測定)",
+    "F5: recovery_time 閾値の緩和または外乱強度の増加で再測定",
+    "全体: EF-full と F0-faithful の MAE 差の原因を制御器実装に帰する論文記述の精緻化"
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "experiment": "f4",
+  "hypothesis": "H4: 散発IO発火 → 高い学習効率",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "online_lr": 0.0005,
+  "conditions": {
+    "f4_continuous": {
+      "final_MAE_post_mean": 210.491,
+      "MAE_improvement_mean": -0.1316,
+      "io_fire_rate_hz_mean": 500.0,
+      "learning_curve_mean": [
+        186.009,
+        210.525,
+        210.507,
+        210.505,
+        210.5,
+        210.499,
+        210.491,
+        210.49,
+        210.491,
+        210.491
+      ],
+      "n_seeds": 10
+    },
+    "f4_10hz": {
+      "final_MAE_post_mean": 210.512,
+      "MAE_improvement_mean": -0.1312,
+      "io_fire_rate_hz_mean": 5.0883,
+      "learning_curve_mean": [
+        186.097,
+        210.545,
+        210.511,
+        210.523,
+        210.52,
+        210.519,
+        210.515,
+        210.516,
+        210.516,
+        210.512
+      ],
+      "n_seeds": 10
+    },
+    "f4_1hz": {
+      "final_MAE_post_mean": 210.515,
+      "MAE_improvement_mean": -0.1312,
+      "io_fire_rate_hz_mean": 0.5217,
+      "learning_curve_mean": [
+        186.098,
+        210.546,
+        210.511,
+        210.521,
+        210.518,
+        210.518,
+        210.515,
+        210.517,
+        210.518,
+        210.515
+      ],
+      "n_seeds": 10
+    },
+    "f4_error_gated": {
+      "final_MAE_post_mean": 210.487,
+      "MAE_improvement_mean": -0.1314,
+      "io_fire_rate_hz_mean": 380.0283,
+      "learning_curve_mean": [
+        186.048,
+        210.502,
+        210.485,
+        210.506,
+        210.501,
+        210.506,
+        210.495,
+        210.495,
+        210.489,
+        210.487
+      ],
+      "n_seeds": 10
+    }
+  }
+}
