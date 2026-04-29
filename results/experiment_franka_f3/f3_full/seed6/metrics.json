@@ -1,0 +1,19 @@
+{
+  "MAE_pre": 159.0605,
+  "MAE_post": 215.2652,
+  "peak_err_rad": 1.40292,
+  "recovery_time_s": null,
+  "tau_adapt_s": null,
+  "overshoot_ratio": 2.0224,
+  "oscillation_freq": 0.3378,
+  "energy_J": 10909.9546,
+  "io_fire_count": 2,
+  "io_fire_rate_hz": 0.3355,
+  "io_fire_interval_mean": 398.0,
+  "condition": "f3_full",
+  "efcopy_enabled": true,
+  "efcopy_noise_std": 0.0,
+  "prop_delay_steps": 10,
+  "cereb_delay_steps": 15,
+  "seed": 6
+}

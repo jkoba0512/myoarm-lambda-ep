@@ -1,0 +1,50 @@
+{
+  "experiment": "f3",
+  "hypothesis": "H3: エファレンスコピー遮断 → 外乱適応遅延",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "conditions": {
+    "f3_full": {
+      "MAE_post_mean": 214.615,
+      "MAE_post_std": 0.553,
+      "tau_adapt_mean": null,
+      "tau_adapt_std": null,
+      "recovery_time_mean": null,
+      "n_seeds": 10
+    },
+    "f3_noisy_low": {
+      "MAE_post_mean": 214.615,
+      "MAE_post_std": 0.554,
+      "tau_adapt_mean": null,
+      "tau_adapt_std": null,
+      "recovery_time_mean": null,
+      "n_seeds": 10
+    },
+    "f3_noisy_hi": {
+      "MAE_post_mean": 214.672,
+      "MAE_post_std": 0.559,
+      "tau_adapt_mean": null,
+      "tau_adapt_std": null,
+      "recovery_time_mean": null,
+      "n_seeds": 10
+    },
+    "f3_removed": {
+      "MAE_post_mean": 235.681,
+      "MAE_post_std": 15.111,
+      "tau_adapt_mean": null,
+      "tau_adapt_std": null,
+      "recovery_time_mean": null,
+      "n_seeds": 10
+    }
+  }
+}
