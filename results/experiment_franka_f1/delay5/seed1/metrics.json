@@ -1,0 +1,20 @@
+{
+  "MAE_pre": 154.3795,
+  "MAE_post": 212.1124,
+  "peak_err_rad": 1.40108,
+  "recovery_time_s": null,
+  "overshoot_ratio": 2.0278,
+  "oscillation_freq": 0.3378,
+  "energy_J": 10180.7018,
+  "energy_post_J": 5941.9862,
+  "jerk_rms": 1153808.523257,
+  "unstable": false,
+  "io_fire_count": 2,
+  "io_fire_rate_hz": 0.3355,
+  "io_fire_interval_mean": 1201.0,
+  "condition": "delay5",
+  "prop_delay_steps": 5,
+  "prop_delay_ms": 10,
+  "cereb_delay_steps": 15,
+  "seed": 1
+}
