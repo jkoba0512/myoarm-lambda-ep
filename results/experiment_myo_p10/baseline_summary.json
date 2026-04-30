@@ -1,0 +1,119 @@
+{
+  "phase": "1-0",
+  "env": "myoArmReachFixed-v0",
+  "controller": "EndpointPID + muscle pseudo-inverse (Kp=80, Kd=15, Ki=2, bias=0.15, J_period=50)",
+  "n_seeds": 10,
+  "max_steps": 600,
+  "n_muscles": 34,
+  "n_joints": 20,
+  "aggregate": {
+    "tip_err_final_mm_mean": 109.18075873357859,
+    "tip_err_final_mm_std": 1.4210854715202004e-14,
+    "tip_err_min_mm_mean": 11.639010737964686,
+    "n_solved": 10,
+    "solve_rate": 1.0
+  },
+  "elapsed_s": 0.7,
+  "per_seed": [
+    {
+      "seed": 0,
+      "n_steps": 150,
+      "tip_err_initial_mm": 775.6129302426983,
+      "tip_err_final_mm": 109.1807587335786,
+      "tip_err_mean_mm": 203.78459509569728,
+      "tip_err_min_mm": 11.639010737964687,
+      "solved": true,
+      "first_solved_step": 59
+    },
+    {
+      "seed": 1,
+      "n_steps": 150,
+      "tip_err_initial_mm": 775.6129302426983,
+      "tip_err_final_mm": 109.1807587335786,
+      "tip_err_mean_mm": 203.78459509569728,
+      "tip_err_min_mm": 11.639010737964687,
+      "solved": true,
+      "first_solved_step": 59
+    },
+    {
+      "seed": 2,
+      "n_steps": 150,
+      "tip_err_initial_mm": 775.6129302426983,
+      "tip_err_final_mm": 109.1807587335786,
+      "tip_err_mean_mm": 203.78459509569728,
+      "tip_err_min_mm": 11.639010737964687,
+      "solved": true,
+      "first_solved_step": 59
+    },
+    {
+      "seed": 3,
+      "n_steps": 150,
+      "tip_err_initial_mm": 775.6129302426983,
+      "tip_err_final_mm": 109.1807587335786,
+      "tip_err_mean_mm": 203.78459509569728,
+      "tip_err_min_mm": 11.639010737964687,
+      "solved": true,
+      "first_solved_step": 59
+    },
+    {
+      "seed": 4,
+      "n_steps": 150,
+      "tip_err_initial_mm": 775.6129302426983,
+      "tip_err_final_mm": 109.1807587335786,
+      "tip_err_mean_mm": 203.78459509569728,
+      "tip_err_min_mm": 11.639010737964687,
+      "solved": true,
+      "first_solved_step": 59
+    },
+    {
+      "seed": 5,
+      "n_steps": 150,
+      "tip_err_initial_mm": 775.6129302426983,
+      "tip_err_final_mm": 109.1807587335786,
+      "tip_err_mean_mm": 203.78459509569728,
+      "tip_err_min_mm": 11.639010737964687,
+      "solved": true,
+      "first_solved_step": 59
+    },
+    {
+      "seed": 6,
+      "n_steps": 150,
+      "tip_err_initial_mm": 775.6129302426983,
+      "tip_err_final_mm": 109.1807587335786,
+      "tip_err_mean_mm": 203.78459509569728,
+      "tip_err_min_mm": 11.639010737964687,
+      "solved": true,
+      "first_solved_step": 59
+    },
+    {
+      "seed": 7,
+      "n_steps": 150,
+      "tip_err_initial_mm": 775.6129302426983,
+      "tip_err_final_mm": 109.1807587335786,
+      "tip_err_mean_mm": 203.78459509569728,
+      "tip_err_min_mm": 11.639010737964687,
+      "solved": true,
+      "first_solved_step": 59
+    },
+    {
+      "seed": 8,
+      "n_steps": 150,
+      "tip_err_initial_mm": 775.6129302426983,
+      "tip_err_final_mm": 109.1807587335786,
+      "tip_err_mean_mm": 203.78459509569728,
+      "tip_err_min_mm": 11.639010737964687,
+      "solved": true,
+      "first_solved_step": 59
+    },
+    {
+      "seed": 9,
+      "n_steps": 150,
+      "tip_err_initial_mm": 775.6129302426983,
+      "tip_err_final_mm": 109.1807587335786,
+      "tip_err_mean_mm": 203.78459509569728,
+      "tip_err_min_mm": 11.639010737964687,
+      "solved": true,
+      "first_solved_step": 59
+    }
+  ]
+}

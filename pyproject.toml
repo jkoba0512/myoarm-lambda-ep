@@ -5,7 +5,8 @@ description = "Neuro-inspired robot arm control with Franka Panda simulation exp
 requires-python = ">=3.11"
 dependencies = [
     "matplotlib>=3.10.8",
-    "mujoco>=3.7.0",
+    "mujoco>=3.6.0",
+    "myosuite>=2.12.1",
     "ncps>=1.0.1",
     "numpy>=2.4.4",
     "scipy>=1.17.1",
