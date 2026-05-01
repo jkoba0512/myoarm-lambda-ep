@@ -1,0 +1,8 @@
+% Force \boldsymbol to use unicode-math's \symbf for proper bold Greek
+% rendering. Without this, amssymb's \boldsymbol (loaded by pandoc before
+% unicode-math) takes precedence and falls back to regular italic for
+% Greek glyphs (e.g., \boldsymbol{\lambda} → λ instead of 𝝀).
+\AtBeginDocument{\let\boldsymbol\symbf}
+
+% Embed figure PDFs inline at each caption (bioRxiv submission style).
+\usepackage{graphicx}

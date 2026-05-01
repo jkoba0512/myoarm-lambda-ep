@@ -2,6 +2,79 @@
 
 Neuro-inspired robot arm control research code built around liquid neural network ideas, classical control, and biologically motivated modules.
 
+> **Paper (in preparation, 2026-04)**: *Decoupling smoothness, accuracy, and kinematic invariance in biological reach: an ablation study of an equilibrium-point controller in a 34-muscle arm model.* See [`paper/manuscript.md`](paper/manuscript.md) and [`paper/SUBMISSION-CHECKLIST.md`](paper/SUBMISSION-CHECKLIST.md). Quickstart for paper figures and tables is below.
+
+## Paper reproduction (Phase 1-6, MyoSuite myoArm)
+
+The published-paper-relevant code is the MyoSuite branch of the project (Phase 1-6, 2026-04). It is **independent** of the Franka simulation tree below.
+
+```bash
+# 0. Environment (dependencies are declared in pyproject.toml)
+python -m venv .venv && .venv/bin/pip install -e .
+# Tested with: MyoSuite 2.12.1, MuJoCo 3.6.0, Gymnasium 1.2.3, Python 3.11, Linux 6.8
+
+# 1. Reproduce headline results (n=50 across 6 conditions; ~6 min on a single CPU)
+.venv/bin/python scripts/experiment_myo_p15_f16_n50.py
+#   → results/experiment_myo_p15/f16_n50.json
+
+# 2. Reproduce factorial ablation (n=20, 8 conditions; ~3 min)
+.venv/bin/python scripts/experiment_myo_p15_f13_ablation.py
+#   → results/experiment_myo_p15/f13_ablation.json
+
+# 3. Reproduce no-cerebellum PD baseline control (n=50; ~30 s)
+.venv/bin/python scripts/experiment_myo_p15_f17_pd_nocereb.py
+#   → results/experiment_myo_p15/f17_pd_nocereb.json
+
+# 4. Regenerate paper figures (Fig 1-5)
+for f in scripts/figures/fig*_*.py; do .venv/bin/python "$f"; done
+#   → figures/fig{1,2,3,4,5}.{pdf,png}
+
+# 5. Build the manuscript PDF
+bash paper/build.sh
+#   → paper/manuscript.pdf  (uses xelatex; requires DejaVu Serif, Latin Modern Math)
+```
+
+Key paper artifacts:
+
+- Controller source: [`src/myoarm/myo_controller.py`](src/myoarm/myo_controller.py) (λ-EP + virtual trajectory + visuomotor + reflexes + cerebellar branch)
+- MyoSuite seed-reproducibility patch: [`src/myoarm/env_utils.py`](src/myoarm/env_utils.py) — `deterministic_reset`
+- Trained CfC checkpoints: [`results/myo_cfc_data*/cfc_model.pt`](results/) (released with the manuscript)
+
+### Minimal reproducer for the MyoSuite seed bug
+
+In the MyoSuite versions tested (2.12.x with MuJoCo 3.6.x, Gymnasium
+1.2.x), `env.reset(seed=N)` does not deterministically reproduce
+the same target. The following snippet demonstrates the issue and
+the fix:
+
+```python
+import gymnasium as gym
+import myosuite  # noqa: F401
+import numpy as np
+from myoarm.env_utils import deterministic_reset  # the fix
+
+env = gym.make("myoArmReachRandom-v0")
+
+# Without the fix: same seed returns different targets across calls
+env.reset(seed=0); t1 = np.array(env.unwrapped.obs_dict["reach_err"])
+env.reset(seed=0); t2 = np.array(env.unwrapped.obs_dict["reach_err"])
+print("native env.reset(seed=0) targets equal?", np.allclose(t1, t2))   # → False
+
+# With the fix: identical targets
+deterministic_reset(env, 0); t3 = np.array(env.unwrapped.obs_dict["reach_err"])
+deterministic_reset(env, 0); t4 = np.array(env.unwrapped.obs_dict["reach_err"])
+print("deterministic_reset targets equal?", np.allclose(t3, t4))         # → True
+```
+
+We encourage users to run this snippet on their own MyoSuite version
+before relying on per-seed reproducibility.
+
+## License
+
+Released under the MIT License — see [LICENSE](LICENSE).
+
+---
+
 This repository currently serves as the simulation-phase codebase for a neuro-inspired robot arm control project. The working code is centered on a MuJoCo Franka Panda torque-control simulation with a neural controller that combines:
 
 - PD feedback

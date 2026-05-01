@@ -1,0 +1,863 @@
+{
+  "phase": "1-2",
+  "env": "myoArmReachRandom-v0",
+  "controller": "MyoArmController",
+  "n_seeds": 20,
+  "elapsed_s": 2.0,
+  "aggregate": {
+    "n_seeds": 20,
+    "solve_rate": 0.05,
+    "jerk_rms": {
+      "mean": 230.31314212657952,
+      "std": 34.60567078778475
+    },
+    "jerk_rms_min_jerk": {
+      "mean": 21.5666523143624,
+      "std": 36.538588545593086
+    },
+    "vel_peak_ratio": {
+      "mean": 0.050450450450450456,
+      "std": 0.006465180222706002
+    },
+    "straightness": {
+      "mean": 0.4780443420655111,
+      "std": 0.06595859928698526
+    },
+    "movement_time_s": {
+      "mean": NaN
+    }
+  },
+  "pre_registered_metrics": {
+    "jerk_rms": "\u221a(mean(|d\u00b3r/dt\u00b3|\u00b2)) [m/s\u00b3] \u2014 \u5c0f\u3055\u3044\u307b\u3069\u6ed1\u3089\u304b",
+    "vel_peak_ratio": "t_peak/T_move \u2208 [0,1] \u2014 \u30d2\u30c8\u4e88\u6e2c\u5024 \u2248 0.50",
+    "straightness": "D_straight/L_path \u2014 \u30d2\u30c8\u4e88\u6e2c\u5024 \u2248 0.85-0.95",
+    "movement_time": "T_move [s] \u2014 \u30d2\u30c8\u5178\u578b\u5024 0.5-1.5 s"
+  },
+  "per_seed": [
+    {
+      "seed": 0,
+      "n_steps": 150,
+      "target_pos": [
+        -0.32724863047884134,
+        -0.40500328446770745,
+        1.042507288887602
+      ],
+      "reach_distance_m": 0.5808600064439444,
+      "final_err_mm": 139.0632962465649,
+      "solved": false,
+      "model_metrics": {
+        "jerk_rms": 177.26245974374632,
+        "vel_peak_ratio": 0.05405405405405406,
+        "straightness": 0.563803603970164,
+        "movement_time": 2.98,
+        "peak_speed": 3.6555632059344703,
+        "onset_step": 0,
+        "offset_step": 148,
+        "n_move_steps": 149
+      },
+      "min_jerk_ref": {
+        "jerk_rms": 0.34461775245247206,
+        "vel_peak_ratio": 0.5033557046979866,
+        "straightness": 1.0,
+        "peak_speed": 0.36544107398230796
+      },
+      "comparison": {
+        "jerk_rms_model": 177.26245974374632,
+        "jerk_rms_min_jerk": 0.34461775245247206,
+        "jerk_rms_diff": 176.91784199129384,
+        "jerk_rms_ratio": 514.3741391215575,
+        "vel_peak_ratio_model": 0.05405405405405406,
+        "vel_peak_ratio_min_jerk": 0.5033557046979866,
+        "vel_peak_ratio_diff": -0.44930165064393257,
+        "vel_peak_ratio_ratio": 0.10738738738738739,
+        "straightness_model": 0.563803603970164,
+        "straightness_min_jerk": 1.0,
+        "straightness_diff": -0.43619639602983595,
+        "straightness_ratio": 0.563803603970164
+      }
+    },
+    {
+      "seed": 1,
+      "n_steps": 150,
+      "target_pos": [
+        -0.1504714028776508,
+        -0.2238129530134504,
+        1.0915907605805528
+      ],
+      "reach_distance_m": 0.48880363924809933,
+      "final_err_mm": 133.53075549551403,
+      "solved": false,
+      "model_metrics": {
+        "jerk_rms": 181.24684989131956,
+        "vel_peak_ratio": 0.04054054054054054,
+        "straightness": 0.38106291643774737,
+        "movement_time": 2.98,
+        "peak_speed": 3.9908436371753644,
+        "onset_step": 0,
+        "offset_step": 148,
+        "n_move_steps": 149
+      },
+      "min_jerk_ref": {
+        "jerk_rms": 0.2900017382493438,
+        "vel_peak_ratio": 0.5033557046979866,
+        "straightness": 1.0,
+        "peak_speed": 0.30752491979412
+      },
+      "comparison": {
+        "jerk_rms_model": 181.24684989131956,
+        "jerk_rms_min_jerk": 0.2900017382493438,
+        "jerk_rms_diff": 180.9568481530702,
+        "jerk_rms_ratio": 624.9853914168036,
+        "vel_peak_ratio_model": 0.04054054054054054,
+        "vel_peak_ratio_min_jerk": 0.5033557046979866,
+        "vel_peak_ratio_diff": -0.46281516415744606,
+        "vel_peak_ratio_ratio": 0.08054054054054054,
+        "straightness_model": 0.38106291643774737,
+        "straightness_min_jerk": 1.0,
+        "straightness_diff": -0.6189370835622526,
+        "straightness_ratio": 0.38106291643774737
+      }
+    },
+    {
+      "seed": 2,
+      "n_steps": 2,
+      "target_pos": [
+        -0.22666380484125528,
+        -0.18023274994904728,
+        1.7480347531611065
+      ],
+      "reach_distance_m": 1.0862244028706347,
+      "final_err_mm": 1060.9268769408047,
+      "solved": false,
+      "model_metrics": {
+        "jerk_rms": NaN,
+        "vel_peak_ratio": NaN,
+        "straightness": NaN,
+        "movement_time": NaN,
+        "peak_speed": NaN
+      },
+      "min_jerk_ref": {
+        "jerk_rms": 83.17283743849053,
+        "vel_peak_ratio": 0.5,
+        "straightness": 1.0,
+        "peak_speed": 3.394451258970734
+      },
+      "comparison": {
+        "jerk_rms_model": NaN,
+        "jerk_rms_min_jerk": 83.17283743849053,
+        "jerk_rms_diff": NaN,
+        "jerk_rms_ratio": NaN,
+        "vel_peak_ratio_model": NaN,
+        "vel_peak_ratio_min_jerk": 0.5,
+        "vel_peak_ratio_diff": NaN,
+        "vel_peak_ratio_ratio": NaN,
+        "straightness_model": NaN,
+        "straightness_min_jerk": 1.0,
+        "straightness_diff": NaN,
+        "straightness_ratio": NaN
+      }
+    },
+    {
+      "seed": 3,
+      "n_steps": 150,
+      "target_pos": [
+        -0.16072481760893695,
+        -0.21157672480295078,
+        1.5210422841212417
+      ],
+      "reach_distance_m": 0.8751616413705197,
+      "final_err_mm": 56.34992429995876,
+      "solved": false,
+      "model_metrics": {
+        "jerk_rms": 247.05465992147072,
+        "vel_peak_ratio": 0.0472972972972973,
+        "straightness": 0.4821277655976745,
+        "movement_time": 2.98,
+        "peak_speed": 4.351362226315202,
+        "onset_step": 0,
+        "offset_step": 148,
+        "n_move_steps": 149
+      },
+      "min_jerk_ref": {
+        "jerk_rms": 0.5192236245151615,
+        "vel_peak_ratio": 0.5033557046979866,
+        "straightness": 1.0,
+        "peak_speed": 0.5505974014091917
+      },
+      "comparison": {
+        "jerk_rms_model": 247.05465992147072,
+        "jerk_rms_min_jerk": 0.5192236245151615,
+        "jerk_rms_diff": 246.53543629695557,
+        "jerk_rms_ratio": 475.8155219769987,
+        "vel_peak_ratio_model": 0.0472972972972973,
+        "vel_peak_ratio_min_jerk": 0.5033557046979866,
+        "vel_peak_ratio_diff": -0.4560584074006893,
+        "vel_peak_ratio_ratio": 0.09396396396396396,
+        "straightness_model": 0.4821277655976745,
+        "straightness_min_jerk": 1.0,
+        "straightness_diff": -0.5178722344023254,
+        "straightness_ratio": 0.4821277655976745
+      }
+    },
+    {
+      "seed": 4,
+      "n_steps": 150,
+      "target_pos": [
+        -0.20109284200012373,
+        -0.08187643393328375,
+        1.5449291433162913
+      ],
+      "reach_distance_m": 0.8693235680791225,
+      "final_err_mm": 127.63693385066132,
+      "solved": false,
+      "model_metrics": {
+        "jerk_rms": 257.36779155951945,
+        "vel_peak_ratio": 0.0472972972972973,
+        "straightness": 0.4848042659471471,
+        "movement_time": 2.98,
+        "peak_speed": 4.2643282898474,
+        "onset_step": 0,
+        "offset_step": 148,
+        "n_move_steps": 149
+      },
+      "min_jerk_ref": {
+        "jerk_rms": 0.5157599608543577,
+        "vel_peak_ratio": 0.5033557046979866,
+        "straightness": 1.0,
+        "peak_speed": 0.5469244479437657
+      },
+      "comparison": {
+        "jerk_rms_model": 257.36779155951945,
+        "jerk_rms_min_jerk": 0.5157599608543577,
+        "jerk_rms_diff": 256.85203159866506,
+        "jerk_rms_ratio": 499.0069239442105,
+        "vel_peak_ratio_model": 0.0472972972972973,
+        "vel_peak_ratio_min_jerk": 0.5033557046979866,
+        "vel_peak_ratio_diff": -0.4560584074006893,
+        "vel_peak_ratio_ratio": 0.09396396396396396,
+        "straightness_model": 0.4848042659471471,
+        "straightness_min_jerk": 1.0,
+        "straightness_diff": -0.5151957340528529,
+        "straightness_ratio": 0.4848042659471471
+      }
+    },
+    {
+      "seed": 5,
+      "n_steps": 150,
+      "target_pos": [
+        -0.08122806620668149,
+        -0.26097929096099404,
+        1.4416365613980568
+      ],
+      "reach_distance_m": 0.8254774961063794,
+      "final_err_mm": 35.05995022828416,
+      "solved": true,
+      "model_metrics": {
+        "jerk_rms": 239.5331349769752,
+        "vel_peak_ratio": 0.0472972972972973,
+        "straightness": 0.4556086791676832,
+        "movement_time": 2.98,
+        "peak_speed": 4.354694369168305,
+        "onset_step": 0,
+        "offset_step": 148,
+        "n_move_steps": 149
+      },
+      "min_jerk_ref": {
+        "jerk_rms": 0.4897465762014513,
+        "vel_peak_ratio": 0.5033557046979866,
+        "straightness": 1.0,
+        "peak_speed": 0.5193392200853022
+      },
+      "comparison": {
+        "jerk_rms_model": 239.5331349769752,
+        "jerk_rms_min_jerk": 0.4897465762014513,
+        "jerk_rms_diff": 239.04338840077375,
+        "jerk_rms_ratio": 489.096088909555,
+        "vel_peak_ratio_model": 0.0472972972972973,
+        "vel_peak_ratio_min_jerk": 0.5033557046979866,
+        "vel_peak_ratio_diff": -0.4560584074006893,
+        "vel_peak_ratio_ratio": 0.09396396396396396,
+        "straightness_model": 0.4556086791676832,
+        "straightness_min_jerk": 1.0,
+        "straightness_diff": -0.5443913208323168,
+        "straightness_ratio": 0.4556086791676832
+      }
+    },
+    {
+      "seed": 6,
+      "n_steps": 2,
+      "target_pos": [
+        -0.3166597467890676,
+        -0.321508767696026,
+        1.7107445729742503
+      ],
+      "reach_distance_m": 1.092574380736998,
+      "final_err_mm": 1060.893195357013,
+      "solved": false,
+      "model_metrics": {
+        "jerk_rms": NaN,
+        "vel_peak_ratio": NaN,
+        "straightness": NaN,
+        "movement_time": NaN,
+        "peak_speed": NaN
+      },
+      "min_jerk_ref": {
+        "jerk_rms": 83.65905895535323,
+        "vel_peak_ratio": 0.5,
+        "straightness": 1.0,
+        "peak_speed": 3.414294939803119
+      },
+      "comparison": {
+        "jerk_rms_model": NaN,
+        "jerk_rms_min_jerk": 83.65905895535323,
+        "jerk_rms_diff": NaN,
+        "jerk_rms_ratio": NaN,
+        "vel_peak_ratio_model": NaN,
+        "vel_peak_ratio_min_jerk": 0.5,
+        "vel_peak_ratio_diff": NaN,
+        "vel_peak_ratio_ratio": NaN,
+        "straightness_model": NaN,
+        "straightness_min_jerk": 1.0,
+        "straightness_diff": NaN,
+        "straightness_ratio": NaN
+      }
+    },
+    {
+      "seed": 7,
+      "n_steps": 150,
+      "target_pos": [
+        -0.05261591916250247,
+        -0.20263058565062161,
+        1.225601347954207
+      ],
+      "reach_distance_m": 0.6146096134361753,
+      "final_err_mm": 128.90098126254992,
+      "solved": false,
+      "model_metrics": {
+        "jerk_rms": 179.07226741269704,
+        "vel_peak_ratio": 0.04054054054054054,
+        "straightness": 0.5122629493429057,
+        "movement_time": 2.98,
+        "peak_speed": 4.1590490034107725,
+        "onset_step": 0,
+        "offset_step": 148,
+        "n_move_steps": 149
+      },
+      "min_jerk_ref": {
+        "jerk_rms": 0.3646410172301947,
+        "vel_peak_ratio": 0.5033557046979866,
+        "straightness": 1.0,
+        "peak_speed": 0.3866742325556239
+      },
+      "comparison": {
+        "jerk_rms_model": 179.07226741269704,
+        "jerk_rms_min_jerk": 0.3646410172301947,
+        "jerk_rms_diff": 178.70762639546686,
+        "jerk_rms_ratio": 491.0919478366041,
+        "vel_peak_ratio_model": 0.04054054054054054,
+        "vel_peak_ratio_min_jerk": 0.5033557046979866,
+        "vel_peak_ratio_diff": -0.46281516415744606,
+        "vel_peak_ratio_ratio": 0.08054054054054054,
+        "straightness_model": 0.5122629493429057,
+        "straightness_min_jerk": 1.0,
+        "straightness_diff": -0.4877370506570943,
+        "straightness_ratio": 0.5122629493429057
+      }
+    },
+    {
+      "seed": 8,
+      "n_steps": 150,
+      "target_pos": [
+        -0.34626390001971097,
+        -0.16071730877892032,
+        1.6255309806057427
+      ],
+      "reach_distance_m": 0.9711172566686382,
+      "final_err_mm": 195.0356160510872,
+      "solved": false,
+      "model_metrics": {
+        "jerk_rms": 277.78322498471505,
+        "vel_peak_ratio": 0.0472972972972973,
+        "straightness": 0.43459011439141615,
+        "movement_time": 2.98,
+        "peak_speed": 4.206302847657587,
+        "onset_step": 0,
+        "offset_step": 148,
+        "n_move_steps": 149
+      },
+      "min_jerk_ref": {
+        "jerk_rms": 0.5761530190549504,
+        "vel_peak_ratio": 0.5033557046979866,
+        "straightness": 1.0,
+        "peak_speed": 0.61096672055694
+      },
+      "comparison": {
+        "jerk_rms_model": 277.78322498471505,
+        "jerk_rms_min_jerk": 0.5761530190549504,
+        "jerk_rms_diff": 277.2070719656601,
+        "jerk_rms_ratio": 482.13446046044504,
+        "vel_peak_ratio_model": 0.0472972972972973,
+        "vel_peak_ratio_min_jerk": 0.5033557046979866,
+        "vel_peak_ratio_diff": -0.4560584074006893,
+        "vel_peak_ratio_ratio": 0.09396396396396396,
+        "straightness_model": 0.43459011439141615,
+        "straightness_min_jerk": 1.0,
+        "straightness_diff": -0.5654098856085839,
+        "straightness_ratio": 0.43459011439141615
+      }
+    },
+    {
+      "seed": 9,
+      "n_steps": 150,
+      "target_pos": [
+        -0.060888018453729875,
+        -0.3981257266550551,
+        1.346552261832266
+      ],
+      "reach_distance_m": 0.8081557932138221,
+      "final_err_mm": 86.23393103610918,
+      "solved": false,
+      "model_metrics": {
+        "jerk_rms": 235.27601492661577,
+        "vel_peak_ratio": 0.060810810810810814,
+        "straightness": 0.4487743562112213,
+        "movement_time": 2.98,
+        "peak_speed": 4.084680426672049,
+        "onset_step": 0,
+        "offset_step": 148,
+        "n_move_steps": 149
+      },
+      "min_jerk_ref": {
+        "jerk_rms": 0.47946980339344314,
+        "vel_peak_ratio": 0.5033557046979866,
+        "straightness": 1.0,
+        "peak_speed": 0.5084414794282864
+      },
+      "comparison": {
+        "jerk_rms_model": 235.27601492661577,
+        "jerk_rms_min_jerk": 0.47946980339344314,
+        "jerk_rms_diff": 234.79654512322233,
+        "jerk_rms_ratio": 490.70038042323404,
+        "vel_peak_ratio_model": 0.060810810810810814,
+        "vel_peak_ratio_min_jerk": 0.5033557046979866,
+        "vel_peak_ratio_diff": -0.4425448938871758,
+        "vel_peak_ratio_ratio": 0.12081081081081081,
+        "straightness_model": 0.4487743562112213,
+        "straightness_min_jerk": 1.0,
+        "straightness_diff": -0.5512256437887787,
+        "straightness_ratio": 0.4487743562112213
+      }
+    },
+    {
+      "seed": 10,
+      "n_steps": 2,
+      "target_pos": [
+        -0.009229104490672657,
+        -0.3492444114602399,
+        1.7443226632334885
+      ],
+      "reach_distance_m": 1.1474976631825662,
+      "final_err_mm": 1121.5707928182692,
+      "solved": false,
+      "model_metrics": {
+        "jerk_rms": NaN,
+        "vel_peak_ratio": NaN,
+        "straightness": NaN,
+        "movement_time": NaN,
+        "peak_speed": NaN
+      },
+      "min_jerk_ref": {
+        "jerk_rms": 87.86456679550217,
+        "vel_peak_ratio": 0.5,
+        "straightness": 1.0,
+        "peak_speed": 3.5859301974455193
+      },
+      "comparison": {
+        "jerk_rms_model": NaN,
+        "jerk_rms_min_jerk": 87.86456679550217,
+        "jerk_rms_diff": NaN,
+        "jerk_rms_ratio": NaN,
+        "vel_peak_ratio_model": NaN,
+        "vel_peak_ratio_min_jerk": 0.5,
+        "vel_peak_ratio_diff": NaN,
+        "vel_peak_ratio_ratio": NaN,
+        "straightness_model": NaN,
+        "straightness_min_jerk": 1.0,
+        "straightness_diff": NaN,
+        "straightness_ratio": NaN
+      }
+    },
+    {
+      "seed": 11,
+      "n_steps": 150,
+      "target_pos": [
+        -0.15581016584072466,
+        -0.410799284436589,
+        1.6039772424869425
+      ],
+      "reach_distance_m": 1.0253652069781618,
+      "final_err_mm": 170.51891743391505,
+      "solved": false,
+      "model_metrics": {
+        "jerk_rms": 264.663137444983,
+        "vel_peak_ratio": 0.05405405405405406,
+        "straightness": 0.4173848360764788,
+        "movement_time": 2.98,
+        "peak_speed": 4.002334867843798,
+        "onset_step": 0,
+        "offset_step": 148,
+        "n_move_steps": 149
+      },
+      "min_jerk_ref": {
+        "jerk_rms": 0.608337721915235,
+        "vel_peak_ratio": 0.5033557046979866,
+        "straightness": 1.0,
+        "peak_speed": 0.6450961648335694
+      },
+      "comparison": {
+        "jerk_rms_model": 264.663137444983,
+        "jerk_rms_min_jerk": 0.608337721915235,
+        "jerk_rms_diff": 264.0547997230678,
+        "jerk_rms_ratio": 435.0595531241129,
+        "vel_peak_ratio_model": 0.05405405405405406,
+        "vel_peak_ratio_min_jerk": 0.5033557046979866,
+        "vel_peak_ratio_diff": -0.44930165064393257,
+        "vel_peak_ratio_ratio": 0.10738738738738739,
+        "straightness_model": 0.4173848360764788,
+        "straightness_min_jerk": 1.0,
+        "straightness_diff": -0.5826151639235212,
+        "straightness_ratio": 0.4173848360764788
+      }
+    },
+    {
+      "seed": 12,
+      "n_steps": 150,
+      "target_pos": [
+        -0.18029930734259847,
+        -0.3187881034411535,
+        1.578213682723261
+      ],
+      "reach_distance_m": 0.9634142550610432,
+      "final_err_mm": 129.69426380838797,
+      "solved": false,
+      "model_metrics": {
+        "jerk_rms": 256.4477610989413,
+        "vel_peak_ratio": 0.05405405405405406,
+        "straightness": 0.4501281276807025,
+        "movement_time": 2.98,
+        "peak_speed": 4.073748471586198,
+        "onset_step": 0,
+        "offset_step": 148,
+        "n_move_steps": 149
+      },
+      "min_jerk_ref": {
+        "jerk_rms": 0.5715829142591344,
+        "vel_peak_ratio": 0.5033557046979866,
+        "straightness": 1.0,
+        "peak_speed": 0.6061204699128294
+      },
+      "comparison": {
+        "jerk_rms_model": 256.4477610989413,
+        "jerk_rms_min_jerk": 0.5715829142591344,
+        "jerk_rms_diff": 255.8761781846822,
+        "jerk_rms_ratio": 448.6623982302547,
+        "vel_peak_ratio_model": 0.05405405405405406,
+        "vel_peak_ratio_min_jerk": 0.5033557046979866,
+        "vel_peak_ratio_diff": -0.44930165064393257,
+        "vel_peak_ratio_ratio": 0.10738738738738739,
+        "straightness_model": 0.4501281276807025,
+        "straightness_min_jerk": 1.0,
+        "straightness_diff": -0.5498718723192975,
+        "straightness_ratio": 0.4501281276807025
+      }
+    },
+    {
+      "seed": 13,
+      "n_steps": 150,
+      "target_pos": [
+        -0.10532264432807928,
+        -0.3784750490528565,
+        1.3641269992825065
+      ],
+      "reach_distance_m": 0.8051065125838478,
+      "final_err_mm": 63.067408923389024,
+      "solved": false,
+      "model_metrics": {
+        "jerk_rms": 238.11502979654838,
+        "vel_peak_ratio": 0.060810810810810814,
+        "straightness": 0.44855844466996564,
+        "movement_time": 2.98,
+        "peak_speed": 4.062364200307075,
+        "onset_step": 0,
+        "offset_step": 148,
+        "n_move_steps": 149
+      },
+      "min_jerk_ref": {
+        "jerk_rms": 0.47766069926225685,
+        "vel_peak_ratio": 0.5033557046979866,
+        "straightness": 1.0,
+        "peak_speed": 0.5065230612622411
+      },
+      "comparison": {
+        "jerk_rms_model": 238.11502979654838,
+        "jerk_rms_min_jerk": 0.47766069926225685,
+        "jerk_rms_diff": 237.63736909728613,
+        "jerk_rms_ratio": 498.50245197964824,
+        "vel_peak_ratio_model": 0.060810810810810814,
+        "vel_peak_ratio_min_jerk": 0.5033557046979866,
+        "vel_peak_ratio_diff": -0.4425448938871758,
+        "vel_peak_ratio_ratio": 0.12081081081081081,
+        "straightness_model": 0.44855844466996564,
+        "straightness_min_jerk": 1.0,
+        "straightness_diff": -0.5514415553300344,
+        "straightness_ratio": 0.44855844466996564
+      }
+    },
+    {
+      "seed": 14,
+      "n_steps": 150,
+      "target_pos": [
+        -0.24980759488444212,
+        -0.3782996863696679,
+        1.5881131223904297
+      ],
+      "reach_distance_m": 0.9959671463479138,
+      "final_err_mm": 167.06713450413176,
+      "solved": false,
+      "model_metrics": {
+        "jerk_rms": 257.09247116705615,
+        "vel_peak_ratio": 0.05405405405405406,
+        "straightness": 0.4344336692033327,
+        "movement_time": 2.98,
+        "peak_speed": 3.8366884214260066,
+        "onset_step": 0,
+        "offset_step": 148,
+        "n_move_steps": 149
+      },
+      "min_jerk_ref": {
+        "jerk_rms": 0.5908961809785804,
+        "vel_peak_ratio": 0.5033557046979866,
+        "straightness": 1.0,
+        "peak_speed": 0.6266007292199425
+      },
+      "comparison": {
+        "jerk_rms_model": 257.09247116705615,
+        "jerk_rms_min_jerk": 0.5908961809785804,
+        "jerk_rms_diff": 256.50157498607757,
+        "jerk_rms_ratio": 435.0890722314138,
+        "vel_peak_ratio_model": 0.05405405405405406,
+        "vel_peak_ratio_min_jerk": 0.5033557046979866,
+        "vel_peak_ratio_diff": -0.44930165064393257,
+        "vel_peak_ratio_ratio": 0.10738738738738739,
+        "straightness_model": 0.4344336692033327,
+        "straightness_min_jerk": 1.0,
+        "straightness_diff": -0.5655663307966673,
+        "straightness_ratio": 0.4344336692033327
+      }
+    },
+    {
+      "seed": 15,
+      "n_steps": 2,
+      "target_pos": [
+        -0.050566453637725606,
+        -0.07765535797715245,
+        1.7991374020891064
+      ],
+      "reach_distance_m": 1.1331334548067282,
+      "final_err_mm": 1118.8547940746068,
+      "solved": false,
+      "model_metrics": {
+        "jerk_rms": NaN,
+        "vel_peak_ratio": NaN,
+        "straightness": NaN,
+        "movement_time": NaN,
+        "peak_speed": NaN
+      },
+      "min_jerk_ref": {
+        "jerk_rms": 86.76469096411886,
+        "vel_peak_ratio": 0.5,
+        "straightness": 1.0,
+        "peak_speed": 3.5410420462710257
+      },
+      "comparison": {
+        "jerk_rms_model": NaN,
+        "jerk_rms_min_jerk": 86.76469096411886,
+        "jerk_rms_diff": NaN,
+        "jerk_rms_ratio": NaN,
+        "vel_peak_ratio_model": NaN,
+        "vel_peak_ratio_min_jerk": 0.5,
+        "vel_peak_ratio_diff": NaN,
+        "vel_peak_ratio_ratio": NaN,
+        "straightness_model": NaN,
+        "straightness_min_jerk": 1.0,
+        "straightness_diff": NaN,
+        "straightness_ratio": NaN
+      }
+    },
+    {
+      "seed": 16,
+      "n_steps": 2,
+      "target_pos": [
+        -0.07205989885887099,
+        -0.15485178902125707,
+        1.736685506819125
+      ],
+      "reach_distance_m": 1.079736294996952,
+      "final_err_mm": 1059.4741195782367,
+      "solved": false,
+      "model_metrics": {
+        "jerk_rms": NaN,
+        "vel_peak_ratio": NaN,
+        "straightness": NaN,
+        "movement_time": NaN,
+        "peak_speed": NaN
+      },
+      "min_jerk_ref": {
+        "jerk_rms": 82.67603922622881,
+        "vel_peak_ratio": 0.5,
+        "straightness": 1.0,
+        "peak_speed": 3.374175921865475
+      },
+      "comparison": {
+        "jerk_rms_model": NaN,
+        "jerk_rms_min_jerk": 82.67603922622881,
+        "jerk_rms_diff": NaN,
+        "jerk_rms_ratio": NaN,
+        "vel_peak_ratio_model": NaN,
+        "vel_peak_ratio_min_jerk": 0.5,
+        "vel_peak_ratio_diff": NaN,
+        "vel_peak_ratio_ratio": NaN,
+        "straightness_model": NaN,
+        "straightness_min_jerk": 1.0,
+        "straightness_diff": NaN,
+        "straightness_ratio": NaN
+      }
+    },
+    {
+      "seed": 17,
+      "n_steps": 150,
+      "target_pos": [
+        -0.335858989018538,
+        -0.2812510264818062,
+        1.6215758287745727
+      ],
+      "reach_distance_m": 0.9977433605821985,
+      "final_err_mm": 203.22127912875092,
+      "solved": false,
+      "model_metrics": {
+        "jerk_rms": 261.0819564892542,
+        "vel_peak_ratio": 0.05405405405405406,
+        "straightness": 0.4392094439501397,
+        "movement_time": 2.98,
+        "peak_speed": 3.83213389024102,
+        "onset_step": 0,
+        "offset_step": 148,
+        "n_move_steps": 149
+      },
+      "min_jerk_ref": {
+        "jerk_rms": 0.5919499890399077,
+        "vel_peak_ratio": 0.5033557046979866,
+        "straightness": 1.0,
+        "peak_speed": 0.6277182130029515
+      },
+      "comparison": {
+        "jerk_rms_model": 261.0819564892542,
+        "jerk_rms_min_jerk": 0.5919499890399077,
+        "jerk_rms_diff": 260.4900065002143,
+        "jerk_rms_ratio": 441.0540777485389,
+        "vel_peak_ratio_model": 0.05405405405405406,
+        "vel_peak_ratio_min_jerk": 0.5033557046979866,
+        "vel_peak_ratio_diff": -0.44930165064393257,
+        "vel_peak_ratio_ratio": 0.10738738738738739,
+        "straightness_model": 0.4392094439501397,
+        "straightness_min_jerk": 1.0,
+        "straightness_diff": -0.5607905560498603,
+        "straightness_ratio": 0.4392094439501397
+      }
+    },
+    {
+      "seed": 18,
+      "n_steps": 150,
+      "target_pos": [
+        -0.14366741218948237,
+        -0.36877189479598604,
+        1.2087516734034873
+      ],
+      "reach_distance_m": 0.6678648326852206,
+      "final_err_mm": 70.95096516170828,
+      "solved": false,
+      "model_metrics": {
+        "jerk_rms": 183.71416088705797,
+        "vel_peak_ratio": 0.05405405405405406,
+        "straightness": 0.6313326270619055,
+        "movement_time": 2.98,
+        "peak_speed": 4.033969494536553,
+        "onset_step": 0,
+        "offset_step": 148,
+        "n_move_steps": 149
+      },
+      "min_jerk_ref": {
+        "jerk_rms": 0.39623674384309376,
+        "vel_peak_ratio": 0.5033557046979866,
+        "straightness": 1.0,
+        "peak_speed": 0.42017911204746505
+      },
+      "comparison": {
+        "jerk_rms_model": 183.71416088705797,
+        "jerk_rms_min_jerk": 0.39623674384309376,
+        "jerk_rms_diff": 183.31792414321487,
+        "jerk_rms_ratio": 463.6474626386672,
+        "vel_peak_ratio_model": 0.05405405405405406,
+        "vel_peak_ratio_min_jerk": 0.5033557046979866,
+        "vel_peak_ratio_diff": -0.44930165064393257,
+        "vel_peak_ratio_ratio": 0.10738738738738739,
+        "straightness_model": 0.6313326270619055,
+        "straightness_min_jerk": 1.0,
+        "straightness_diff": -0.3686673729380945,
+        "straightness_ratio": 0.6313326270619055
+      }
+    },
+    {
+      "seed": 19,
+      "n_steps": 150,
+      "target_pos": [
+        -0.3406002018493697,
+        -0.1585719014863451,
+        1.2798157110388804
+      ],
+      "reach_distance_m": 0.6397814157186439,
+      "final_err_mm": 129.4128757216925,
+      "solved": false,
+      "model_metrics": {
+        "jerk_rms": 198.98621159779304,
+        "vel_peak_ratio": 0.04054054054054054,
+        "straightness": 0.5865833312741814,
+        "movement_time": 2.98,
+        "peak_speed": 4.0633877305831145,
+        "onset_step": 0,
+        "offset_step": 148,
+        "n_move_steps": 149
+      },
+      "min_jerk_ref": {
+        "jerk_rms": 0.3795751663048901,
+        "vel_peak_ratio": 0.5033557046979866,
+        "straightness": 1.0,
+        "peak_speed": 0.40251076865403995
+      },
+      "comparison": {
+        "jerk_rms_model": 198.98621159779304,
+        "jerk_rms_min_jerk": 0.3795751663048901,
+        "jerk_rms_diff": 198.60663643148814,
+        "jerk_rms_ratio": 524.2340101827402,
+        "vel_peak_ratio_model": 0.04054054054054054,
+        "vel_peak_ratio_min_jerk": 0.5033557046979866,
+        "vel_peak_ratio_diff": -0.46281516415744606,
+        "vel_peak_ratio_ratio": 0.08054054054054054,
+        "straightness_model": 0.5865833312741814,
+        "straightness_min_jerk": 1.0,
+        "straightness_diff": -0.4134166687258186,
+        "straightness_ratio": 0.5865833312741814
+      }
+    }
+  ]
+}
