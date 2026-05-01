@@ -139,8 +139,11 @@ We make four contributions.
    simultaneously incorporates the λ-EP hypothesis, a minimum-jerk
    virtual trajectory, a periodic visuomotor correction, and a stack
    of spinal reflexes (Fig. 5). The implementation is MIT-licensed
-   and will be released with the pre-print, with reproduction
-   commands documented in the repository README.
+   and is archived as
+   [Zenodo \texttt{10.5281/zenodo.19948021}](https://doi.org/10.5281/zenodo.19948021)
+   (GitHub mirror:
+   [\texttt{jkoba0512/myoarm-lambda-ep}](https://github.com/jkoba0512/myoarm-lambda-ep)),
+   with reproduction commands documented in the repository README.
 2. We show that this controller is practically equivalent to an
    **endpoint-PD + spinal** baseline — a Cartesian PD descending
    command sharing the same spinal reflex layer (§2.6) — on minimum
@@ -521,8 +524,12 @@ the point.
 $\approx 6$ s on a single CPU; the headline $n = 50$ comparison
 across six conditions completes in under 35 minutes. The MIT-
 licensed implementation, exact seed lists, raw per-seed metric
-tables, and trained CfC weights will be released with the pre-print,
-with reproduction commands documented in the repository README.
+tables, and trained CfC weights are archived as
+[Zenodo \texttt{10.5281/zenodo.19948021}](https://doi.org/10.5281/zenodo.19948021)
+(GitHub mirror:
+[\texttt{jkoba0512/myoarm-lambda-ep}](https://github.com/jkoba0512/myoarm-lambda-ep),
+release \texttt{v1.0.0-bioRxiv}), with reproduction commands documented
+in the repository \texttt{README}.
 
 ---
 
@@ -763,8 +770,8 @@ shape (vpr $0.330$ vs $0.403$, $d \approx -0.62$) without any
 compensating accuracy gain. We swept gains in $\{0.05, 0.1, 0.2,
 0.5\}$ for the joint pathway and $\{0.1, 0.5, 1.0\}$ for the λ
 pathway and found no setting that simultaneously improves accuracy,
-smoothness, and bell shape; the full sweep table will be released
-with the pre-print.
+smoothness, and bell shape; the full sweep table is included in the
+released code archive (see Zenodo record above).
 
 We interpret this negative result not as evidence against a role for
 the cerebellum in reaching, but as a constraint on its *temporal

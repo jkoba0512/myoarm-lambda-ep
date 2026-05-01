@@ -1,6 +1,6 @@
 # myoarm-lambda-ep
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19948021.svg)](https://doi.org/10.5281/zenodo.19948021)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Code accompanying the bioRxiv pre-print:
@@ -117,7 +117,7 @@ software record:
   title   = {{myoarm-lambda-ep}: λ-EP controller for the MyoSuite
              {myoArmReachRandom-v0} environment},
   year    = {2026},
-  doi     = {10.5281/zenodo.XXXXXXX},
+  doi     = {10.5281/zenodo.19948021},
   url     = {https://github.com/jkoba0512/myoarm-lambda-ep},
   version = {v1.0.0-bioRxiv},
 }

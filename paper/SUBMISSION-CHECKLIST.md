@@ -237,7 +237,9 @@ bioRxiv 投稿が成功した後に着手:
 
 - [x] LICENSE ファイル (MIT) — `/LICENSE`
 - [x] README に Quickstart 追加済 (`README.md` 冒頭)
-- [ ] DOI 取得 (Zenodo 連携) — bioRxiv 投稿時に code DOI も付与しておく
+- [x] **Zenodo DOI 取得済** — `10.5281/zenodo.19948021` (release `v1.0.0-bioRxiv`, 2026-05-01)
+  - GitHub: https://github.com/jkoba0512/myoarm-lambda-ep
+  - Zenodo: https://doi.org/10.5281/zenodo.19948021
 - [x] `src/myoarm/env_utils.py:deterministic_reset` を独立して docstring 化済
 
 ## 投稿当日の手順
@@ -262,6 +264,7 @@ tar -czf /tmp/biorxiv-submission.tar.gz \
 ## 残課題 (緊急度順)
 
 1. ~~**affiliation / funding** を決定~~ (2026-05-01 確定: KIT 飯塚 / no external funding)
-2. **Zenodo DOI** 取得 (GitHub 連携で 30 分)
-3. **manuscript PDF 再ビルド** (`bash paper/build.sh`) で author block を最終確認
-4. **Bio Cyb 用追加作業** は bioRxiv 投稿後で良い (TOST / Springer template / Supplementary)
+2. ~~**Zenodo DOI** 取得~~ (2026-05-01 確定: `10.5281/zenodo.19948021`, release `v1.0.0-bioRxiv`)
+3. **manuscript PDF 再ビルド** (`bash paper/build.sh`) で DOI 反映後の本文を最終確認
+4. **bioRxiv フォーム入力 → submit**
+5. **Bio Cyb 用追加作業** は bioRxiv 投稿後で良い (TOST / Springer template / Supplementary)
