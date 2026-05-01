@@ -22,3 +22,8 @@ results/experiment_franka_e*/**/*.png
 
 # Tool-local state
 .codex
+
+# Internal research notes — not part of the public release
+docs/
+plan/
+survey/
