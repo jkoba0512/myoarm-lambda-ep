@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite both the bioRxiv pre-print and this software record."
+title: "myoarm-lambda-ep: λ-EP controller for the MyoSuite myoArmReachRandom-v0 environment"
+abstract: "Reference implementation of a biologically motivated reach controller that combines Feldman's λ-equilibrium-point hypothesis, a minimum-jerk virtual trajectory, a 200 ms visuomotor correction, and γ-compatible spinal reflexes (Ia, Ib, reciprocal inhibition) for the MyoSuite myoArmReachRandom-v0 environment (20-DoF, 34 Hill-type muscles). Includes the ablation experiments and figure-generation pipeline behind the bioRxiv pre-print 'Decoupling smoothness, accuracy, and kinematic invariance in biological reach'."
+type: software
+authors:
+  - given-names: Jun
+    family-names: Kobayashi
+    email: kobayashi.jun184@m.kyutech.ac.jp
+    orcid: "https://orcid.org/0009-0002-6318-2617"
+    affiliation: "Department of Intelligent and Control Systems, Graduate School of Computer Science and Systems Engineering, Kyushu Institute of Technology, 680-4 Kawazu, Iizuka, Fukuoka 820-8502, Japan"
+repository-code: "https://github.com/jkoba0512/myoarm-lambda-ep"
+license: MIT
+version: v1.0.0-bioRxiv
+date-released: "2026-05-01"
+keywords:
+  - equilibrium-point hypothesis
+  - virtual trajectory
+  - visuomotor feedback
+  - spinal reflexes
+  - musculoskeletal model
+  - reach control
+  - MyoSuite
+  - ablation study
+  - computational neuroscience
+preferred-citation:
+  type: article
+  title: "Decoupling smoothness, accuracy, and kinematic invariance in biological reach: an ablation study of an equilibrium-point controller in a 34-muscle arm model"
+  authors:
+    - given-names: Jun
+      family-names: Kobayashi
+      orcid: "https://orcid.org/0009-0002-6318-2617"
+      affiliation: "Kyushu Institute of Technology"
+  journal: "bioRxiv"
+  year: 2026
+  notes: "Pre-print; in preparation."
