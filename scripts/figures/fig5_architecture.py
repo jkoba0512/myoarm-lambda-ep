@@ -96,7 +96,8 @@ def main():
         "axes.titlesize": 9,
     })
 
-    fig, ax = plt.subplots(figsize=(7.2, 8.4))
+    # Bio Cyb full single-column width = 174 mm = 6.85 in (was 7.2 in / 183 mm).
+    fig, ax = plt.subplots(figsize=(6.85, 7.99))
     ax.set_xlim(0, 10)
     ax.set_ylim(0, 12)
     ax.axis("off")

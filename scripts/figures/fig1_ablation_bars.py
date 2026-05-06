@@ -70,7 +70,8 @@ def main():
         "axes.spines.right": False,
     })
 
-    fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.2))
+    # Bio Cyb full single-column width = 174 mm = 6.85 in (was 7.2 in / 183 mm).
+    fig, axes = plt.subplots(2, 2, figsize=(6.85, 4.95))
     axes = axes.flatten()
 
     colors = ["#888888", "#9ecae1", "#4292c6", "#08519c"]

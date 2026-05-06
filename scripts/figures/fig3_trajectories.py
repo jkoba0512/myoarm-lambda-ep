@@ -65,7 +65,8 @@ def main():
         "legend.fontsize": 7,
     })
 
-    fig = plt.figure(figsize=(8.4, 3.0))
+    # Bio Cyb full single-column width = 174 mm = 6.85 in (was 8.4 in / 213 mm).
+    fig = plt.figure(figsize=(6.85, 2.45))
     gs = fig.add_gridspec(1, 3, wspace=0.42, width_ratios=[1.5, 1.0, 1.0])
     ax3d = fig.add_subplot(gs[0, 0], projection="3d")
     ax_yz = fig.add_subplot(gs[0, 1])

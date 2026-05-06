@@ -85,7 +85,8 @@ def main():
         "axes.spines.right": False,
     })
 
-    fig, axes = plt.subplots(1, 3, figsize=(7.2, 2.25),
+    # Bio Cyb full single-column width = 174 mm = 6.85 in (was 7.2 in / 183 mm).
+    fig, axes = plt.subplots(1, 3, figsize=(6.85, 2.14),
                               gridspec_kw={"width_ratios": [1.2, 1.2, 0.9]})
     ax_rep, ax_warp, ax_dist = axes
 
