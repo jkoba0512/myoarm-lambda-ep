@@ -10,7 +10,8 @@ Status        : DRAFT 2026-05-06
 
 May 6, 2026
 
-Prof. Benjamin Lindner, Prof. Peter Thomas, and Prof. Jean-Marc Fellous
+Prof. Benjamin Lindner, Prof. Peter Thomas, Prof. Jean-Marc Fellous,
+and Prof. Paul Tiesinga
 Editors-in-Chief
 *Biological Cybernetics*
 Springer Nature
