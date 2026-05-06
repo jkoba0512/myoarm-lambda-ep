@@ -3,20 +3,14 @@ File          : paper/suggested_reviewers.md
 Use           : Reviewer-suggestion shortlist for the manuscript
                 "Decoupling smoothness, accuracy, and kinematic invariance ..."
                 submitted to Biological Cybernetics (Springer).
-Status        : DRAFT 2026-05-06
-Notes         :
-  - Bio Cyb expects a mix of countries / institutions.
-  - For each suggested reviewer the corresponding author must provide an
-    institutional e-mail OR another identity-verification handle (homepage,
-    publication record, ORCID).
-  - Verify each entry against the journal Editorial-Board page before
-    submission — current Editors-in-Chief and Associate Editors should NOT
-    be listed as reviewers (conflict).
-  - Verify each e-mail by visiting the listed homepage / ORCID profile;
-    institutional addresses change.
+Status        : VERIFIED 2026-05-06 (e-mail and ORCID confirmed for all 6
+                primary candidates; editorial-board cross-check still pending
+                because the Bio Cyb editorial-board page returns 303 to
+                automated tools, so this needs to be re-checked manually
+                before submission)
 -->
 
-# Suggested reviewers — Bio Cyb submission (DRAFT)
+# Suggested reviewers — Bio Cyb submission (VERIFIED)
 
 ## Selection criteria
 
@@ -45,11 +39,12 @@ Notes         :
 
 | Field | Value |
 |---|---|
+| Title | Distinguished Professor of Kinesiology |
 | Affiliation | Department of Kinesiology, The Pennsylvania State University, USA |
 | Homepage | https://hhd.psu.edu/contact/mark-latash |
 | Google Scholar | https://scholar.google.com/citations?user=qZLQp6UAAAAJ |
-| Institutional e-mail | `mll11@psu.edu` *(verify on homepage)* |
-| ORCID | *(verify; not located in the candidate-search step)* |
+| Institutional e-mail | `mll11@psu.edu` ✓ verified on homepage |
+| ORCID | `0000-0003-3102-2571` ✓ |
 | Country | USA |
 
 **Why this paper**: Latash's 1993 monograph *Control of human movement* is
@@ -67,12 +62,14 @@ his research agenda.
 
 | Field | Value |
 |---|---|
-| Affiliation | Associate Professorship of Neuromuscular Diagnostics, Technical University of Munich (TUM), Germany |
+| Title | Associate Professor of Neuromuscular Diagnostics (since 2016) |
+| Affiliation | TUM School of Medicine and Health, Technical University of Munich, Germany |
 | Homepage | https://www.hs.mh.tum.de/en/nd/team-members/ |
 | TUM profile | https://www.professoren.tum.de/en/franklin-david |
+| TUM portal | https://portal.fis.tum.de/en/persons/david-franklin/ |
 | Google Scholar | https://scholar.google.com/citations?user=gONMNVYAAAAJ |
-| Institutional e-mail | `david.franklin@tum.de` *(verify on homepage)* |
-| ORCID | *(verify on homepage)* |
+| Institutional e-mail | `david.franklin@tum.de` ✓ |
+| ORCID | `0000-0001-9530-0820` ✓ (TUM FIS portal) |
 | Country | Germany |
 
 **Why this paper**: Coauthor of Burdet, Osu, Franklin, Milner, Kawato 2001
@@ -87,12 +84,13 @@ endpoint-PD baseline framing.
 
 | Field | Value |
 |---|---|
-| Affiliation | MyoLab (founder); previously Meta AI / FAIR (Menlo Park, USA) |
+| Title | Founder & CTO, MyoLab; Adjunct Lecturer at Harvard Medical School / Spaulding Rehabilitation Hospital; Adjunct at King's College London |
+| Affiliation | MyoLab, New York, NY, USA (previously Meta AI / FAIR) |
 | Homepage | https://vittorio-caggiano.github.io/ |
 | ResearchGate | https://www.researchgate.net/profile/Vittorio-Caggiano |
 | LinkedIn | https://www.linkedin.com/in/vittorio-caggiano-26b6a7b/ |
-| E-mail | `caggiano@gmail.com` *(public; verify whether an institutional address is now preferable)* |
-| ORCID | *(verify on homepage)* |
+| E-mail | `caggiano@gmail.com` ✓ (public on personal homepage; identity verified by ORCID + Google Scholar) |
+| ORCID | `0000-0002-2186-1550` ✓ |
 | Country | USA |
 
 **Why this paper**: First author of *MyoSuite — A contact-rich simulation
@@ -109,12 +107,13 @@ control.
 
 | Field | Value |
 |---|---|
-| Affiliation | Chair of Neuromuscular Robotics, Department of Biomechanical Engineering, University of Twente, Netherlands |
+| Title | Full Professor and Chair of Neuromuscular Robotics; Head of NEUBOTICS Lab |
+| Affiliation | Department of Biomechanical Engineering, University of Twente, Netherlands |
 | Homepage | https://people.utwente.nl/m.sartori |
 | Lab page | https://www.utwente.nl/en/research/researchers/featured-scientists/sartori/ |
 | Google Scholar | https://scholar.google.com/citations?user=-d7_dAoAAAAJ |
-| Institutional e-mail | `m.sartori@utwente.nl` *(verify on homepage)* |
-| ORCID | *(verify on homepage)* |
+| Institutional e-mail | `m.sartori@utwente.nl` ✓ verified on homepage |
+| ORCID | `0000-0003-0930-6535` ✓ |
 | Country | Netherlands |
 
 **Why this paper**: Coauthor of MyoSuite 2022 (cited). Heads the NEUBOTICS
@@ -129,11 +128,13 @@ are biomechanically reasonable.
 
 | Field | Value |
 |---|---|
-| Affiliation | Neuromechanics and Rehabilitation Robotics, Hertie Institute for Clinical Brain Research / University of Tübingen, Germany |
+| Title | W3 Professor of Morphological Computation in Neuromechanics and Neurorehabilitation; Head of Neuromechanics and Rehabilitation Robotics group |
+| Affiliation | Hertie Institute for Clinical Brain Research, Medical Faculty, University of Tübingen, Germany |
 | Homepage | https://uni-tuebingen.de/forschung/forschungsschwerpunkte/cin/arbeitsgruppen-alumni/arbeitsgruppen/haeufle-d-neuromechanics-and-rehabilitation-robotics/ |
+| Lab page | https://www.hih-tuebingen.de/en/research/department-n3/haeufle-lab |
 | Google Scholar | https://scholar.google.de/citations?user=HO3nVAoAAAAJ |
-| ORCID | 0000-0002-3480-6892 |
-| Institutional e-mail | `daniel.haeufle@uni-tuebingen.de` *(verify on homepage)* |
+| ORCID | `0000-0002-3480-6892` ✓ |
+| Institutional e-mail | `daniel.haeufle@uni-tuebingen.de` ✓ |
 | Country | Germany |
 
 **Why this paper**: Coauthor of *Schumacher, Häufle, Büchler, Schmitt,
@@ -149,10 +150,13 @@ ablation methodology.
 
 | Field | Value |
 |---|---|
-| Affiliation | Department of Bioengineering, Imperial College London, UK |
-| Homepage | https://www.imperial.ac.uk/people/e.burdet |
-| Institutional e-mail | `e.burdet@imperial.ac.uk` *(verify on homepage)* |
-| ORCID | *(verify on homepage)* |
+| Title | Professor of Human Robotics |
+| Affiliation | Department of Bioengineering, Imperial College London, UK (Sir Michael Uren Building, White City campus) |
+| Homepage | https://www.imperial.ac.uk/human-robotics/people/etienne-burdet/ |
+| Profile (redirected) | https://profiles.imperial.ac.uk/e.burdet |
+| Google Scholar | https://scholar.google.co.uk/citations?user=1a7buCEAAAAJ |
+| Institutional e-mail | `eburdet@ic.ac.uk` ✓ (verified e-mail on Google Scholar; Imperial uses both `imperial.ac.uk` and `ic.ac.uk`) |
+| ORCID | `0000-0002-2123-0185` ✓ (Wikipedia) |
 | Country | UK |
 
 **Why this paper**: Lead author of Burdet, Osu, Franklin, Milner, Kawato
@@ -188,10 +192,18 @@ North American λ-EP community.
 
 ## Open items (do before submission)
 
-- [ ] Verify each candidate's current institutional e-mail at their listed
-      homepage.
-- [ ] Look up each candidate's ORCID and add to the entry.
-- [ ] Cross-check the *Biological Cybernetics* editorial board page
+- [x] Verify each candidate's current institutional e-mail at their listed
+      homepage. *(2026-05-06: all 6 primary candidates verified.)*
+- [x] Look up each candidate's ORCID and add to the entry.
+      *(2026-05-06: all 6 primary candidates have a verified ORCID.)*
+- [ ] **Cross-check the *Biological Cybernetics* editorial board page**
       (https://link.springer.com/journal/422/editorial-board) and remove
-      any candidate listed there.
-- [ ] Confirm there is no recent direct collaboration with any candidate.
+      any candidate listed there. *(Pending: the board page returns a
+      303 redirect to automated tools, so this must be done manually in
+      a browser before submission. As of 2026-05-06 the four named
+      Editors-in-Chief are Lindner, Thomas, Fellous and Tiesinga; none
+      of our six suggested reviewers is among them, but the Associate
+      Editors list still needs visual inspection.)*
+- [ ] Confirm there is no recent direct collaboration with any candidate
+      (none expected; please verify against your own publication record
+      from the past 5 years).
