@@ -2,8 +2,8 @@
 Title         : Decoupling smoothness, accuracy, and kinematic invariance in
                 biological reach: an ablation study of an equilibrium-point
                 controller in a 34-muscle arm model
-Target venue  : Biological Cybernetics (Springer)  via bioRxiv pre-print
-Status        : DRAFT — Abstract + §1–§5 (2026-04-30)
+Target venue  : Biological Cybernetics (Springer); preprint posted on bioRxiv (DOI 10.64898/2026.05.01.722167, 2026-05-06)
+Status        : Preprint v1 posted 2026-05-06; Springer submission pending
 Word target   : ≈ 8000 words main text, 5 figures
 Author        : Jun Kobayashi (ORCID: 0009-0002-6318-2617)
                 Department of Intelligent and Control Systems,

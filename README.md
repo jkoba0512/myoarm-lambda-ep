@@ -7,7 +7,8 @@ Code accompanying the bioRxiv pre-print:
 
 > Kobayashi, J. (2026). *Decoupling smoothness, accuracy, and kinematic
 > invariance in biological reach: an ablation study of an equilibrium-point
-> controller in a 34-muscle arm model.* bioRxiv (in preparation).
+> controller in a 34-muscle arm model.* bioRxiv. doi:
+> [10.64898/2026.05.01.722167](https://doi.org/10.64898/2026.05.01.722167)
 
 The repository contains a biologically motivated controller for the MyoSuite
 `myoArmReachRandom-v0` environment (20-DoF, 34 Hill-type muscles), implementing
@@ -108,8 +109,9 @@ software record:
              controller in a 34-muscle arm model},
   journal = {bioRxiv},
   year    = {2026},
-  doi     = {10.1101/XXXX.XX.XX.XXXXXX},
-  note    = {Pre-print; in preparation},
+  doi     = {10.64898/2026.05.01.722167},
+  url     = {https://www.biorxiv.org/cgi/content/short/2026.05.01.722167v1},
+  note    = {Pre-print},
 }
 
 @software{Kobayashi2026myoArmLambdaEPSoftware,
@@ -123,8 +125,10 @@ software record:
 }
 ```
 
-The DOI placeholders will be replaced with concrete identifiers after the
-bioRxiv submission and Zenodo release.
+The bioRxiv pre-print was posted on 2026-05-06 (DOI
+[10.64898/2026.05.01.722167](https://doi.org/10.64898/2026.05.01.722167)).
+The Zenodo software record corresponds to release `v1.0.0-bioRxiv`
+(DOI [10.5281/zenodo.19948021](https://doi.org/10.5281/zenodo.19948021)).
 
 ## License
 

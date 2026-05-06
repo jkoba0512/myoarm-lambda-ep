@@ -30,10 +30,10 @@
   "related_identifiers": [
     {
       "relation": "isSupplementTo",
-      "identifier": "10.1101/XXXX.XX.XX.XXXXXX",
+      "identifier": "10.64898/2026.05.01.722167",
       "resource_type": "publication-preprint",
       "scheme": "doi"
     }
   ],
-  "notes": "The related_identifiers DOI is the bioRxiv pre-print and will be filled in after submission. The software is the reference implementation for the manuscript."
+  "notes": "The related_identifiers DOI points to the bioRxiv pre-print of the accompanying manuscript (posted 2026-05-06). The software is the reference implementation for that manuscript."
 }
