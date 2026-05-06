@@ -14,11 +14,8 @@
 %%                with a separate references.bib is a follow-up step.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% Final submission target style: sn-basic (Bio Cyb / SPBASIC name-year).
-%% Using `default` for the MVP because the stop-gap thebibliography list
-%% is not compatible with natbib author-year mode. Switch back to
-%% [sn-basic] when references are migrated to a separate references.bib.
-\documentclass[default]{sn-jnl}
+%% Bio Cyb uses Springer Basic (SPBASIC) name-year style.
+\documentclass[sn-basic]{sn-jnl}
 
 %% sn-jnl.cls (this 2019 mirror) calls \SetFootnoteHook and
 %% \DeclareNewFootnote inside \AtBeginDocument without loading the
@@ -65,17 +62,15 @@ violate}
 Human upper-limb reach exhibits a small set of kinematic regularities
 that hold across speeds, distances, postures, and even loaded
 conditions. End-effector speed follows an approximately bell-shaped
-profile whose peak occurs at 40--50 \% of movement duration (Morasso
-1981; Flash and Hogan 1985); the hand path between two points is nearly
+profile whose peak occurs at 40--50 \% of movement duration \citep{morasso1981, flashhogan1985}; the hand path between two points is nearly
 straight in extrinsic space; and the time-derivative of acceleration
-(jerk) is minimised in the sense of Hogan (1984). These properties are
+(jerk) is minimised in the sense of \citet{hogan1984}. These properties are
 maintained even when the underlying joint trajectories are highly
 non-linear, suggesting that the central nervous system plans in a
 representation in which they are natural constraints rather than
 emergent costs.
 
-Modern musculoskeletal benchmarks such as MyoSuite (Caggiano et al.
-2022) make it possible to simulate a 34-muscle Hill-type arm and to test
+Modern musculoskeletal benchmarks such as MyoSuite \citep{caggiano2022} make it possible to simulate a 34-muscle Hill-type arm and to test
 motor-control hypotheses in a setting that retains realistic muscle
 dynamics. The default control schemes available in this setting ---
 proportional--derivative (PD) endpoint controllers, model predictive
@@ -94,29 +89,26 @@ visuomotor
 feedback}
 
 Three mature ideas in motor neuroscience together suggest a complete
-controller. \textbf{Feldman's $\lambda$-equilibrium-point hypothesis} (Feldman
-1966, 1986; Bizzi et al.~1976) posits that the descending command
+controller. \textbf{Feldman's $\lambda$-equilibrium-point hypothesis} \citep{feldman1966, feldman1986, bizzi1976} posits that the descending command
 specifies, for each muscle \(i\), a length threshold \(\lambda_i\) above
 which the muscle is recruited. Activation is generated locally by
 \(a_i = \mathrm{clip}(c\cdot\max(L_i - \lambda_i, 0),\,0,\,1)\) where
 \(L_i\) is the current actuator length; the limb settles into the
 equilibrium that balances the resulting muscle forces and external
 loads, with no need for the brain to invert the dynamics. The
-\textbf{virtual-trajectory} extension (Feldman and Levin 1995; Latash
-1993) replaces the static \(\boldsymbol{\lambda}_{\rm target}\) with a
+\textbf{virtual-trajectory} extension \citep{feldmanlevin1995, latash1993} replaces the static \(\boldsymbol{\lambda}_{\rm target}\) with a
 smooth time-varying trajectory \(\boldsymbol{\lambda}(t)\) --- for
 example, a minimum-jerk interpolation --- between the initial threshold
 vector and the target one. Finally, \textbf{online visuomotor feedback}
-(Saunders and Knill 2003; Sarlegna and Sainburg 2009) provides a slow ($\approx$
+\citep{saundersknill2003, sarlegnasainburg2009} provides a slow ($\approx$
 100-- 200 ms latency) correction in which the central nervous system
 re-estimates the target threshold from the observed tip position; the
 error in \(\boldsymbol{\lambda}_{\rm target}\) is corrected without
 disrupting the ongoing virtual trajectory. Embedded within the spinal
-cord, \textbf{$\gamma$-compatible stretch reflexes} (Prochazka 1989; Loeb
-1984), Golgi-tendon load feedback, and reciprocal inhibition shape the
+cord, \textbf{$\gamma$-compatible stretch reflexes} \citep{prochazka1989, loeb1984}, Golgi-tendon load feedback, and reciprocal inhibition shape the
 activation locally on a 20--30 ms timescale and prevent co-contraction.
 We retain the architectural slot for descending $\gamma$-motoneuron modulation
-(Prochazka 1989) but disable it in our production controller, since
+\citep{prochazka1989} but disable it in our production controller, since
 pilot experiments showed no benefit on the metrics of interest (§3,
 ablation).
 
@@ -197,9 +189,8 @@ extended.
 environment}
 
 We simulate reach in MyoSuite's \texttt{myoArmReachRandom-v0}
-environment (Caggiano et al.~2022; tested with MyoSuite 2.12.1, MuJoCo
-3.6.0, Gymnasium 1.2.3 on Linux 6.8), which wraps a MuJoCo (Todorov et
-al. 2012) model of a human upper limb with 20 kinematic degrees of
+environment (\citealt{caggiano2022}; tested with MyoSuite 2.12.1, MuJoCo
+3.6.0, Gymnasium 1.2.3 on Linux 6.8), which wraps a MuJoCo \citep{todorov2012} model of a human upper limb with 20 kinematic degrees of
 freedom (shoulder, elbow, forearm, wrist, and the metacarpo-phalangeal /
 inter-phalangeal joints of the index finger) actuated by 34 Hill-type
 muscle--tendon units. The end-effector site \texttt{IFtip} is the index
@@ -244,7 +235,7 @@ behaviour in their own version before relying on it.
 controller}
 
 Our controller follows the $\lambda$-version of Feldman's equilibrium-point
-hypothesis (Feldman 1986; Feldman and Levin 1995). The descending
+hypothesis \citep{feldman1986, feldmanlevin1995}. The descending
 command is a vector of muscle threshold lengths
 \(\boldsymbol{\lambda} \in \mathbb{R}^{34}\) rather than a torque or
 muscle activation. Local muscle activation is generated by the linear
@@ -280,11 +271,11 @@ forward kinematics pass, and the threshold vector is \[
 remains slightly stretched and Eq. (1) does not generate a flat-zero
 activation at the target. This IK is run once per movement.
 
-\textbf{Virtual trajectory.} Following Feldman and Levin (1995), the
+\textbf{Virtual trajectory.} Following \citet{feldmanlevin1995}, the
 descending command is a \emph{time-varying} trajectory
 \(\boldsymbol{\lambda}(t)\) rather than a static
 \(\boldsymbol{\lambda}_{\rm target}\). We use a min-jerk interpolation
-(Flash and Hogan 1985) between the threshold at movement onset
+\citep{flashhogan1985} between the threshold at movement onset
 \(\boldsymbol{\lambda}_{s} = \mathbf{L}(\mathbf{q}_{0}) - \lambda_{0}\mathbf{1}_{34}\)
 and the target threshold: \[
 \boldsymbol{\lambda}(\tau) \;=\; \boldsymbol{\lambda}_{s} + s(\tau)\bigl(\boldsymbol{\lambda}_{\rm target}-\boldsymbol{\lambda}_{s}\bigr),
@@ -302,8 +293,7 @@ feedback}
 
 The static virtual trajectory of Eq. (3) is open-loop in the visual
 sense: it commits to the threshold trajectory implied by the IK solution
-at movement onset and is blind to the actual tip motion. Saunders and
-Knill (2003) and Sarlegna and Sainburg (2009) show that human reach
+at movement onset and is blind to the actual tip motion. \citet{saundersknill2003} and \citet{sarlegnasainburg2009} show that human reach
 incorporates online visual updates with a 100--200 ms latency. We add an
 analogous slow loop that re-runs the IK from the \emph{current}
 configuration and updates only the target threshold, \[
@@ -330,7 +320,7 @@ velocity-proportional excitation
 (10 integration steps), implemented with a fixed-length delay buffer.
 The architecture admits a $\gamma$-motoneuron modulation
 \(K_{\rm Ia}\to K_{\rm Ia}\,(1+\gamma\exp(-\|\mathbf{e}\|/\sigma_{\gamma}))\)
-on target approach (Prochazka 1989), but \(\gamma = 0\) in all
+on target approach \citep{prochazka1989}, but \(\gamma = 0\) in all
 configurations reported below ($\gamma$-on configurations were tested in pilot
 experiments and provided no benefit).
 
@@ -357,13 +347,12 @@ branch)}
 
 To test whether an online cerebellar correction can further improve
 performance, we trained a closed-form-continuous-time (CfC) recurrent
-forward model (Hasani et al.~2022) that predicts the next-step joint
+forward model \citep{hasani2022} that predicts the next-step joint
 configuration from the delayed proprioceptive state and an efference
 copy of the descending command:
 \(\hat{\mathbf{q}}_{t+1} = f_{\rm CfC}(\mathbf{q}^{\rm del}_{t}, \dot{\mathbf{q}}^{\rm del}_{t}, \mathbf{a}^{\rm efcopy}_{t})\).
 We evaluated two correction pathways inspired by competing
-interpretations of cerebellar output (Kawato 1999; Wolpert et al. 1998;
-Ito 2008). The \emph{joint-space} pathway maps the prediction error
+interpretations of cerebellar output \citep{kawato1999, wolpert1998, ito2008}. The \emph{joint-space} pathway maps the prediction error
 \(\delta\mathbf{q} = \mathbf{q}_{t+1}-\hat{\mathbf{q}}_{t+1}\) to a
 torque correction
 \(\boldsymbol{\tau}_{\rm cereb} = K_{\rm cereb}\,\delta\mathbf{q}\) and
@@ -378,7 +367,7 @@ muscle moment-arm matrix; this correction adds to
 \(\boldsymbol{\lambda}(t)\) before Eq. (1). Both pathways are passed
 through a 30 ms cerebello-cortical loop delay. Online learning of the
 CfC weights is gated by an inferior-olive analogue that fires sparsely
-on prediction-error spikes (Ito 2008); the firing-rate calibration and
+on prediction-error spikes \citep{ito2008}; the firing-rate calibration and
 module are documented with the released code. In the headline ablation
 we report two cerebellar configurations with \(K_{\rm cereb} = 0.2\)
 (joint pathway) and \(K_{\rm cereb}^{\lambda} = 0.5\) ($\lambda$ pathway) on top
@@ -451,7 +440,7 @@ the projection of net travel onto the target direction normalised by
 target distance; \emph{peak speed}
 \(\max_{t}\|\dot{\mathbf{x}}_{\rm tip}\|\); \emph{velocity-peak ratio}
 (vpr), the time of peak speed normalised by movement duration (human
-reference: 0.40--0.50; Morasso 1981; Flash and Hogan 1985);
+reference: 0.40--0.50; \citealt{morasso1981, flashhogan1985});
 \emph{root-mean-square jerk} on the third time-derivative of
 \(\mathbf{x}_{\rm tip}\); \emph{straightness}, the ratio of the
 straight-line distance between movement onset and offset to the
@@ -493,8 +482,7 @@ test unless stated otherwise.
 \textbf{Pre-defined equivalence margins for accuracy.} To support the
 practically-equivalent claim against the headline baseline (§3.1) we
 define the following practical equivalence margins on the per-seed
-paired differences and run a two one-sided \(t\)-test (TOST, Lakens
-2017):
+paired differences and run a two one-sided \(t\)-test (TOST, \citealt{lakens2017}):
 
 \begin{itemize}
 \tightlist
@@ -564,8 +552,7 @@ and we discuss the distinction between practical and statistical
 equivalence in §4.4. Solve rate is low for both controllers (1/50 vs
 2/50) because the MyoSuite reach environment uses a tight 50 mm
 tolerance, smaller than the residual error reported in unconstrained
-human reaching without a final corrective movement (Sarlegna and
-Sainburg 2009); we report all metrics on the full \(n = 50\) regardless
+human reaching without a final corrective movement \citep{sarlegnasainburg2009}; we report all metrics on the full \(n = 50\) regardless
 of solve status.
 
 \textbf{Smoothness.} The biological controller more than halves peak tip
@@ -576,7 +563,7 @@ Cohen's \(d = -7.39\); Welch confirms with \(t = -36.97\),
 (\(240 \pm 70\) vs \(399 \pm 109\) m s\(^{-3}\); paired
 \(p < 10^{-10}\), \(d = -1.74\); Welch \(p < 10^{-12}\); Fig. 1b). The
 1.78 m s\(^{-1}\) peak speed is consistent with reported peak hand
-speeds for unconstrained 30--50 cm reaches (Morasso 1981).
+speeds for unconstrained 30--50 cm reaches \citep{morasso1981}.
 
 \textbf{Peak timing inside the human band; residual asymmetry.} Only the
 full controller produces a velocity-peak ratio (vpr) inside the human
@@ -586,7 +573,7 @@ the near-impulsive ballistic profile of feedback-linearisation control),
 \(0.221 \pm 0.170\) for the pure $\lambda$ + visuomotor controller without
 reflexes (a broad, double-peaked profile), and \(0.403 \pm 0.122\) for
 the full controller with reflexes --- squarely inside the 0.40--0.50
-human band (Flash and Hogan 1985). Speed-profile skewness drops from
+human band \citep{flashhogan1985}. Speed-profile skewness drops from
 \(+2.56\) for the baseline to \(+1.10\) for the full controller
 (\(d = -2.69\), \(p < 10^{-22}\)), indicating a markedly more symmetric
 profile. We emphasise that \emph{peak timing} is what enters the human
@@ -779,7 +766,7 @@ pre-trained CfC forward model, the correction provides no information
 that the spinal layer has not already used. This is consistent with the
 view that the cerebellar contribution to reaching is dominated by
 \emph{trial-by-trial} learning of internal models rather than
-\emph{within-trial} steering (Wolpert et al.~1998; Ito 2008; discussion
+\emph{within-trial} steering (\citealt{wolpert1998, ito2008}; discussion
 in §4).
 
 \subsection{Validation of the seed-reproducibility
@@ -853,8 +840,8 @@ predict, on minimum tip error and direction error.
 The spinal reflex layer is the only component that adds a \emph{closed}
 feedback loop on the muscle-length axis at a 20 ms timescale. Its
 \(d = +1.44\) contribution to vpr is precisely the kind of effect
-predicted by Prochazka's (1989) sensorimotor-gain perspective and the
-``preflex'' concept of Loeb (1984): the antagonist activation triggered
+predicted by Prochazka's \citeyearpar{prochazka1989} sensorimotor-gain perspective and the
+``preflex'' concept of \citet{loeb1984}: the antagonist activation triggered
 by stretch reflex in the late phase of the reach decelerates the limb on
 the descending side of the bell, which both moves the peak to
 mid-movement and sharpens the peak. The cost of this on peak-speed
@@ -882,8 +869,7 @@ example, slow drifts in muscle properties, inertial loads, or the
 geometry of the hand--object interaction. Our controller does not yet
 adapt across trials, which we take as the natural next step. The result
 is consistent with the cerebellar contribution being primarily
-inverse-model \emph{learning} (Wolpert et al. 1998; Kawato 1999; Ito
-2008) rather than within-trial steering.
+inverse-model \emph{learning} \citep{wolpert1998, kawato1999, ito2008} rather than within-trial steering.
 
 \subsection{Limitations}
 
@@ -894,8 +880,7 @@ reach tolerance (50 mm). The two controllers reach to within
 combination of controller, environment, and tolerance threshold rather
 than any single one of them. The 50 mm tolerance is itself tight
 relative to the residual error reported for unconstrained-vision human
-reach without a final corrective sub-movement (Sarlegna and Sainburg
-2009). We deliberately report metric distributions rather than solve
+reach without a final corrective sub-movement \citep{sarlegnasainburg2009}. We deliberately report metric distributions rather than solve
 rate as the primary outcome because the present paper evaluates
 \emph{kinematic-invariant attribution} across control layers, not
 task-completion performance; a task-completion-oriented controller would
@@ -904,13 +889,12 @@ do not model.
 
 \textbf{Straightness.} The full controller's straightness ratio of
 \(0.612\) is below the human range of \(\approx 0.85\) for medium-speed
-reaches (Morasso 1981). Inspection of the trajectories shows that this
+reaches \citep{morasso1981}. Inspection of the trajectories shows that this
 is dominated by \emph{post-target} path wandering during the late phase
 of the episode (the reach window is 12 s but the movement window is $\approx$ 2
 s), not by curvature during the approach. Restricting the analysis to
 the approach phase gives a straightness ratio of \(\approx 0.78\), much
-closer to the human range. A task-space virtual trajectory (Morasso
-1981; Flash and Hogan 1985) computed in end-effector coordinates rather
+closer to the human range. A task-space virtual trajectory \citep{morasso1981, flashhogan1985} computed in end-effector coordinates rather
 than in $\lambda$ space did improve approach straightness in pilot experiments
 (F15) but was unstable when combined with the visuomotor loop, and we
 did not include it in the production controller.
@@ -923,7 +907,7 @@ end- effectors, or under loaded conditions is left to future work.
 
 \textbf{No RL baseline.} We compare against the endpoint-PD + spinal
 baseline but not against state-of-the-art RL controllers such as DEP-RL
-(Schumacher et al.~2023). Our argument is not that the biological
+\citep{schumacher2023}. Our argument is not that the biological
 controller beats RL --- it almost certainly does not on aggregate task
 performance --- but that the \emph{kinematic invariants} characteristic
 of human reach can be reproduced by a controller built from the
@@ -1012,81 +996,14 @@ shape separable kinematic axes in a high-dimensional muscle arm.
 \paragraph{Preprint.} A preprint of this manuscript has been posted on bioRxiv: \href{https://doi.org/10.64898/2026.05.01.722167}{10.64898/2026.05.01.722167} (2026-05-06).
 
 %%========================================================================%%
-%% References --- STOP-GAP form (thebibliography environment).             %%
-%% TODO: convert to references.bib + \bibliographystyle{sn-basic} +       %%
-%% \bibliography{references} for SPBASIC name-year style. The in-text     %%
-%% citations also need to be rewritten from plain "(Author year)" to      %%
-%% \citet{key} / \citep{key} at that time.                                %%
+%% References - natbib + SPBASIC style. Source bibliography database is   %%
+%% paper/tex/references.bib. Bibliography keys correspond to those used   %%
+%% in \citet / \citep / \citealt commands throughout the body.            %%
 %%========================================================================%%
 
-\begin{thebibliography}{99}
-
-\bibitem{bizzi1976}
-Bizzi E, Polit A, Morasso P (1976) Mechanisms underlying achievement of final head position. J Neurophysiol 39:435--444.
-
-\bibitem{burdet2001}
-Burdet E, Osu R, Franklin DW, Milner TE, Kawato M (2001) The central nervous system stabilizes unstable dynamics by learning optimal impedance. Nature 414:446--449.
-
-\bibitem{caggiano2022}
-Caggiano V, Wang H, Durandau G, Sartori M, Kumar V (2022) MyoSuite: a contact-rich simulation suite for musculoskeletal motor control. In: Proceedings of the 4th Annual Learning for Dynamics and Control Conference (L4DC). PMLR 168:492--507.
-
-\bibitem{feldman1966}
-Feldman AG (1966) Functional tuning of the nervous system with control of movement or maintenance of a steady posture. II. Controllable parameters of the muscles. Biofizika 11:498--508.
-
-\bibitem{feldman1986}
-Feldman AG (1986) Once more on the equilibrium-point hypothesis ($\lambda$ model) for motor control. J Mot Behav 18:17--54.
-
-\bibitem{feldmanlevin1995}
-Feldman AG, Levin MF (1995) The origin and use of positional frames of reference in motor control. Behav Brain Sci 18:723--744.
-
-\bibitem{flashhogan1985}
-Flash T, Hogan N (1985) The coordination of arm movements: an experimentally confirmed mathematical model. J Neurosci 5:1688--1703.
-
-\bibitem{hasani2022}
-Hasani R, Lechner M, Amini A, Liebenwein L, Ray A, Tschaikowski M, Teschl G, Rus D (2022) Closed-form continuous-time neural networks. Nat Mach Intell 4:992--1003.
-
-\bibitem{hogan1984}
-Hogan N (1984) An organizing principle for a class of voluntary movements. J Neurosci 4:2745--2754.
-
-\bibitem{hogan1985}
-Hogan N (1985) The mechanics of multi-joint posture and movement control. Biol Cybern 52:315--331.
-
-\bibitem{ito2008}
-Ito M (2008) Control of mental activities by internal models in the cerebellum. Nat Rev Neurosci 9:304--313.
-
-\bibitem{kawato1999}
-Kawato M (1999) Internal models for motor control and trajectory planning. Curr Opin Neurobiol 9:718--727.
-
-\bibitem{lakens2017}
-Lakens D (2017) Equivalence tests: a practical primer for $t$-tests, correlations, and meta-analyses. Soc Psychol Personal Sci 8:355--362.
-
-\bibitem{latash1993}
-Latash ML (1993) Control of human movement. Human Kinetics, Champaign, IL.
-
-\bibitem{loeb1984}
-Loeb GE (1984) The control and responses of mammalian muscle spindles during normally executed motor tasks. Exerc Sport Sci Rev 12:157--204.
-
-\bibitem{morasso1981}
-Morasso P (1981) Spatial control of arm movements. Exp Brain Res 42:223--227.
-
-\bibitem{prochazka1989}
-Prochazka A (1989) Sensorimotor gain control: a basic strategy of motor systems? Prog Neurobiol 33:281--307.
-
-\bibitem{sarlegnasainburg2009}
-Sarlegna FR, Sainburg RL (2009) The roles of vision and proprioception in the planning of reaching movements. Adv Exp Med Biol 629:317--335.
-
-\bibitem{saundersknill2003}
-Saunders JA, Knill DC (2003) Humans use continuous visual feedback from the hand to control fast reaching movements. Exp Brain Res 152:341--352.
-
-\bibitem{schumacher2023}
-Schumacher P, H{\"a}ufle DFB, B{\"u}chler D, Schmitt S, Martius G (2023) Natural and robust walking using reinforcement learning without demonstrations in high-dimensional musculoskeletal models. arXiv:2309.02976.
-
-\bibitem{todorov2012}
-Todorov E, Erez T, Tassa Y (2012) MuJoCo: a physics engine for model-based control. In: 2012 IEEE/RSJ Int Conf on Intelligent Robots and Systems. pp 5026--5033.
-
-\bibitem{wolpert1998}
-Wolpert DM, Miall RC, Kawato M (1998) Internal models in the cerebellum. Trends Cogn Sci 2:338--347.
-
-\end{thebibliography}
+%% Note: sn-jnl.cls already issues \bibliographystyle{sn-basic} when the
+%% [sn-basic] option is given on \documentclass, so we do NOT repeat it
+%% here (would trigger 'Illegal, another \bibstyle command' in bibtex).
+\bibliography{references}
 
 \end{document}
