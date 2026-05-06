@@ -34,35 +34,28 @@ controller combining (i) Feldman's λ-equilibrium-point hypothesis,
 (ii) a minimum-jerk virtual trajectory $\boldsymbol{\lambda}(t)$,
 (iii) a 200 ms visuomotor correction, and (iv) γ-compatible spinal
 reflexes (Ia, Ib, reciprocal inhibition). Across $n = 50$
-randomised targets the full controller is practically equivalent to
-an **endpoint-PD + spinal** baseline (Cartesian PD descending
-command paired with the same spinal reflex layer; see §2.6) on
-minimum tip error (Cohen's $d = +0.03$; paired Wilcoxon detects
-only a $+10.6$ mm residual against a $\approx 100$ mm absolute
-error, well within a pre-defined $\pm 20$ mm equivalence margin)
-while halving peak speed
-($1.78$ vs $3.90$ m s$^{-1}$, $d = -7.39$, $p < 10^{-15}$) and
-reducing jerk by 40 % ($d = -1.74$). Only the variant with stretch
-reflexes brings the velocity-peak ratio into the canonical human
-range ($0.40$–$0.50$). Straightness stays below the human reference,
-so we frame the result as a *partial* reproduction of the bell-shape
+randomised targets the full controller is practically equivalent in
+accuracy to an **endpoint-PD + spinal** baseline (Cohen's
+$d = +0.03$ on minimum tip error of $\approx 100$ mm, within a
+pre-defined $\pm 20$ mm equivalence margin) while halving peak
+speed ($1.78$ vs $3.90$ m s$^{-1}$, $d = -7.39$) and reducing jerk
+by 40 % ($d = -1.74$). Only the variant with stretch reflexes
+brings the velocity-peak ratio into the canonical human range
+($0.40$–$0.50$). Straightness remains below the human reference, so
+we frame the result as a *partial* reproduction of the bell-shape
 and smoothness invariants, not full human-like reach. A factorial
-ablation ($n = 20$) decomposes the contributions: virtual trajectory
-primarily controls smoothness, visuomotor feedback primarily
-controls accuracy, and reflexes primarily control velocity-peak
-timing, with two quantifiable secondary effects reported explicitly.
-An attempted online cerebellar correction in joint or λ space did
-not improve performance, consistent with — but not by itself
-demonstrating — the cerebellum as a slow inverse-model learner
-rather than a within-trial steering controller. We release a
-`deterministic_reset` patch for a seeding bug in the MyoSuite reach
-environments (in the versions tested). The result is mechanistic
-rather than task-optimal: it attributes separable kinematic axes
-to distinct biological control layers in a 34-muscle arm.
+ablation ($n = 20$) attributes separable kinematic axes to distinct
+biological control layers: the virtual trajectory primarily
+controls smoothness, visuomotor feedback primarily controls
+accuracy, and reflexes primarily control velocity-peak timing. An
+attempted online cerebellar correction in joint or $\lambda$ space
+did not improve performance, consistent with the cerebellum acting
+as a slow inverse-model learner rather than a within-trial steerer.
+The result is mechanistic rather than task-optimal.
 
 **Keywords**: equilibrium-point hypothesis · virtual trajectory ·
-visuomotor feedback · spinal reflexes · musculoskeletal model · reach
-control · MyoSuite · ablation study
+visuomotor feedback · spinal reflexes · musculoskeletal model ·
+ablation study
 
 ---
 
@@ -1158,6 +1151,59 @@ $(\mathbf{q}, \dot{\mathbf{q}}, \mathbf{x}_{\rm tip})$ feeds back to
 the spinal pool with a 20 ms proprioceptive delay (left loop) and to
 the visuomotor block with a 100–200 ms visual delay (right loop).
 Component colours match those used in Figs 1–4.
+
+---
+
+## Declarations
+
+### Funding
+
+The author declares that no external funding was received for this
+work.
+
+### Competing interests
+
+The author declares that he has no competing interests.
+
+### Author contributions
+
+This is a single-author work. JK conceived the study, designed and
+implemented the controllers and the evaluation pipeline, performed
+the experiments and analyses, prepared the figures, and wrote the
+manuscript.
+
+### Ethics approval
+
+Not applicable. This study used only computational simulations and
+did not involve human participants, animals, or biological samples.
+
+### Consent to participate / Consent for publication
+
+Not applicable.
+
+### Availability of data and materials
+
+The complete implementation, exact seed lists, raw per-seed metric
+tables, trained CfC weights, and figure-generation pipeline are
+released under the MIT license at the GitHub repository
+[`jkoba0512/myoarm-lambda-ep`](https://github.com/jkoba0512/myoarm-lambda-ep)
+and archived as Zenodo
+[10.5281/zenodo.19948021](https://doi.org/10.5281/zenodo.19948021)
+(release `v1.0.0-bioRxiv`). The reproduction commands are documented
+in the repository `README`. The seed-reproducibility helper
+(`deterministic_reset`) for the MyoSuite reach environments is
+provided in `src/myoarm/env_utils.py`.
+
+### Code availability
+
+See "Availability of data and materials" above. All code is included
+in the same release.
+
+### Preprint
+
+A preprint of this manuscript has been posted on bioRxiv:
+[10.64898/2026.05.01.722167](https://doi.org/10.64898/2026.05.01.722167)
+(2026-05-06).
 
 ---
 
